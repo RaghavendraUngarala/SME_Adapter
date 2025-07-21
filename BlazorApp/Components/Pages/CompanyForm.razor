@@ -1,0 +1,52 @@
+﻿@page "/companyform"
+@using SMEAdapter.Application.DTOs
+@inject NavigationManager Navigation
+@inject SMEAdapter.Application.Services.ProductInfoService StateInfo
+
+<h3>Company Details</h3>
+<EditForm Model="@company" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    
+
+    <div class="mb-3 input-width">
+        <label for="manufacturerName">Manufacturer Name</label>
+        <InputText id="manufacturerName" class="form-control input-width" @bind-Value="company.ManufacturerName" />
+        <ValidationMessage For="@(() => company.ManufacturerName)" />
+    </div>
+
+    <fieldset>
+        <legend>Address Info</legend>
+
+    
+        <div class="mb-3 input-width">
+            <label for="zipCode">Zip Code</label>
+            <InputText id="zipCode" class="form-control" @bind-Value="company.AddressInfo.ZipCode" />
+        </div>
+
+        <div class="mb-3 input-width">
+            <label for="city">City</label>
+            <InputText id="city" class="form-control" @bind-Value="company.AddressInfo.City" />
+        </div>
+         
+        <div class="mb-3 input-width">
+            <label for="country">Country</label>
+            <InputText id="country" class="form-control" @bind-Value="company.AddressInfo.Country" />
+        </div>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</EditForm>
+<br/>
+
+<NavLink class="btn btn-primary" href="/">
+    Go to Home page
+</NavLink>
+@code {
+    private ProductDto company = new ProductDto();
+
+    private void HandleValidSubmit()
+    {
+        StateInfo.CurrentProductDetails = company;
+        Navigation.NavigateTo("/product");
+    }
+}

@@ -1,0 +1,48 @@
+﻿@page "/viewproducts"
+@using MediatR
+@using SMEAdapter.Application.DTOs
+@inject IMediator Mediator
+@using SMEAdapter.Application.Products.GetProducts
+
+<h3>Products List</h3>
+
+@if (products == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!products.Any())
+{
+    <p>No products found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Manufacturer</th>
+                <th>Serial</th>
+                <th>City</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in products)
+            {
+                <tr>
+                    <td>@p.ManufacturerName</td>
+                    <td>@p.SerialNumber</td>
+                    <td>@p.AddressInfo.City</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ProductDto>? products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await Mediator.Send(new GetAllProductsQuery());
+    }
+}
+

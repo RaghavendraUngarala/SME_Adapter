@@ -1,0 +1,109 @@
+﻿@page "/product"
+
+@using MediatR;
+@using SMEAdapter.Application.DTOs;
+@inject SMEAdapter.Application.Services.ProductInfoService State
+@inject NavigationManager navigate
+@using SMEAdapter.Application.Products.CreateProduct
+@inject IMediator Mediator
+
+@if (State.CurrentProductDetails != null)
+{
+
+    <EditForm Model="@State.CurrentProductDetails"  OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        
+        <fieldset>
+            <legend>Manufacturer Info</legend>
+            <div class="input-width">
+                <label>Manufacturer Name:</label>
+                <InputText class="form-control"
+                           @bind-Value="State.CurrentProductDetails.ManufacturerName"
+                           readonly />
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Address Info</legend>
+            
+            <div class="input-width">
+                <label>Zip Code:</label>
+                <InputText class="form-control "
+                           @bind-Value="State.CurrentProductDetails.AddressInfo.ZipCode"
+                           readonly />
+            </div>
+            <div class="input-width">
+                <label>City:</label>
+                <InputText class="form-control "
+                           @bind-Value="State.CurrentProductDetails.AddressInfo.City"
+                           readonly />
+            </div>
+            <div class="input-width">
+                <label>Country:</label>
+                <InputText class="form-control "
+                           @bind-Value="State.CurrentProductDetails.AddressInfo.Country"
+                           readonly />
+            </div>
+        </fieldset>
+
+    <fieldset>
+
+        <legend>Product Info</legend>
+            <div class="input-width">
+            <label>Product Designation:</label>
+                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ProductDesignation" class="form-control input-width" />
+        </div>
+        <legend>Product Info</legend>
+        <div class="input-width">
+            <label>SerialNumber:</label>
+            <InputText @bind-Value="State.CurrentProductDetails.SerialNumber" class="form-control input-width" />
+        </div>
+        <div class="input-width">
+            <label>Product Root:</label>
+                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ProductRoot" class="form-control input-width" />
+        </div>
+        <div class="input-width">
+            <label>Product Family:</label>
+                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ProductFamily" class="form-control input-width" />
+        </div>
+        <div class="input-width">
+            <label>Product Type:</label>
+                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ProductType" class="form-control input-width" />
+        </div>
+         <div class="input-width">
+            <label>Order Code:</label>
+                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.OrderCode" class="form-control input-width" />
+        </div>
+        <div class="input-width">
+            <label>Article Number:</label>
+                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ArticleNumber" class="form-control input-width" />
+        </div>
+    </fieldset>
+ 
+    <br/>
+    <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <NavLink class="btn btn-primary" href="/companyform">Back</NavLink>
+    </div>
+</EditForm>
+   
+}
+else
+{
+    <p>No company information available. Please enter company details first.</p>
+}
+
+<br/>
+
+@code {
+
+    
+
+    private async Task HandleValidSubmit()
+    {
+        var command = new CreateProductCommand(State.CurrentProductDetails);
+        await Mediator.Send(command);
+    }
+}

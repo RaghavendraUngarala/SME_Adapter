@@ -1,0 +1,24 @@
+﻿@page "/"
+@inject NavigationManager Navigation
+<PageTitle>Home</PageTitle>
+
+<h1>Start by entering the company details!</h1>
+
+<br/>
+<br/>
+<button class="btn btn-secondary" @onclick="ShowForm">Enter Company Details</button>
+
+@if (showForm)
+{
+    <!-- Render the non-routable component when button is clicked -->
+    Navigation.NavigateTo("/companyform");
+}
+
+@code {
+    private bool showForm = false;
+
+    private void ShowForm()
+    {
+        showForm = true;
+    }
+}
