@@ -1,11 +1,13 @@
 ﻿@page "/companyform"
 @using SMEAdapter.Application.DTOs
+@using System.IO
 @inject NavigationManager Navigation
 @inject SMEAdapter.Application.Services.ProductInfoService StateInfo
 <br/>
 <h3>Company Details</h3>
 <MudGrid>
     <MudItem xs="12" sm="12" md="4">
+        <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
         <EditForm Model="@company" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
         <DataAnnotationsValidator/>
        
@@ -18,7 +20,9 @@
             <MudTextField Class="custom-font" T="string" Variant="Variant.Outlined" Label="Zip Code" @bind-Value="company.AddressInfo.ZipCode" For="@(() => company.AddressInfo.ZipCode)" />
             <MudTextField Class="custom-font" T="string" Variant="Variant.Outlined" Label="City" @bind-Value="company.AddressInfo.City" For="@(() => company.AddressInfo.City)" />
             <MudTextField Class="custom-font" T="string" Variant="Variant.Outlined" Label="Country" @bind-Value="company.AddressInfo.Country" For="@(() => company.AddressInfo.Country)" />
-                
+
+            <MudText Typo="Typo.h6" Class="mt-4">Upload Company Logo</MudText>
+            <InputFile OnChange="OnFilesChanged" accept=".png,.jpg,.jpeg,.pdf" />
             <MudStack Row="true" Spacing="2" Class="mt-4">
                 <MudButton Variant="Variant.Outlined"  ButtonType="ButtonType.Submit" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
                     Save
@@ -30,11 +34,14 @@
             </MudStack>
 
         </EditForm>
+        </MudPaper>
     </MudItem>
 </MudGrid>
 @code {
     private ProductDto company = new ProductDto();
 
+    // Add this field to fix CS0103
+    private IBrowserFile uploadedFile;
 
     private void HandleValidSubmit()
     {
@@ -44,6 +51,20 @@
 
     private void HandleInvalidSubmit()
     {
-        Console.WriteLine("Invalid submit");// Handle invalid form submission if needed
+        Console.WriteLine("Invalid submit");
+    }
+    private async Task OnFilesChanged(InputFileChangeEventArgs e)
+    {
+        uploadedFile = e.File;
+        var folderpath = Path.Combine("C:\\Blazor-Files");
+        var filePath = Path.Combine(folderpath, uploadedFile.Name);
+        Directory.CreateDirectory(folderpath);
+        // Save the uploaded file directly to disk
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        using var stream = uploadedFile.OpenReadStream(maxAllowedSize: 10_000_000); // 10MB max
+        await stream.CopyToAsync(fileStream);
+    }
+
+        
     }
 }

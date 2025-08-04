@@ -7,18 +7,26 @@
 
 
 <MudLayout>
-    <MudAppBar Class="custom-appbar" Color="Color.Primary" Elevation="4" >
+    <MudAppBar style="background-color :  #00796B" Elevation="3">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Size = "Size.Large" Edge="Edge.Start" OnClick="@DrawerToggle" />
-        <MudText Typo="Typo.h3" Class="appbar-title">SME Adapter</MudText>
-        
-        <img src="images/SME Adapter_Logo.png" alt="Logo" style="height:60px; width:auto; margin-left: 16px; margin-right:16px;"/>
+        <img src="images/SME Adapter_Logo.png" alt="Logo" style="height:60px; width:auto; margin-left: 16px; margin-right:16px;" />
+        <MudText Typo="Typo.h3" Class="appbar-title">SME Adapter</MudText>      
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Width="250px" Elevation="4">
         <NavMenu/>
     </MudDrawer>
+    
+    
     <MudMainContent>
         @Body
     </MudMainContent>
+   
+    <MudAppBar Bottom="true" style="background-color :  #00796B" Fixed="true" Elevation="2">
+        
+        <MudSpacer />
+        <img src="images/David_Logo.png" alt="Logo" style="height:60px; width:auto; margin-left: 16px; margin-right:16px;" />
+        <img src="images/Manufacturing-x-Logo.jpg" alt="Logo" style="height:60px; width:auto; margin-left: 16px; margin-right:16px;" />
+    </MudAppBar>
 </MudLayout>
 @code {
     bool _drawerOpen = true;
