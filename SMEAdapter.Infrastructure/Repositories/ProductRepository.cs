@@ -29,7 +29,23 @@ namespace SMEAdapter.Infrastructure.Repositories
                     .Include(p => p.ProductInfo)
                     .ToListAsync(ct);
             }
-        
+            public async Task<Product?> GetByIdAsync(Guid id, CancellationToken ct = default)
+            {
+                return await _context.Products
+                    .Include(p => p.AddressInfo)
+                    .Include(p => p.ProductInfo)
+                    .FirstOrDefaultAsync(p => p.Id == id, ct);
+            }
+            public async Task UpdateAsync(Product product, CancellationToken cancellationToken)
+            {
+                _context.Products.Update(product);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
 
+        public async Task DeleteAsync(Product product)
+            {                
+                _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
+            }
     }
 }

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SMEAdapter.Application.Products.GetProducts
+namespace SMEAdapter.Application.Products.Queries.GetProducts
 {
     public class GetAllProductsQuery : IRequest<List<ProductDto>>
     {

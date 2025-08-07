@@ -9,101 +9,142 @@
 
 @if (State.CurrentProductDetails != null)
 {
+<MudGrid>
+    <MudItem xs="12" sm="12" md="6">
+        <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
+                <EditForm Model="@State.CurrentProductDetails" OnValidSubmit="HandleValidSubmit" >
+                    <DataAnnotationsValidator />
 
-    <EditForm Model="@State.CurrentProductDetails"  OnValidSubmit="@HandleValidSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+                    <!-- Manufacturer Info -->
+                    <MudText Typo="Typo.h5">Manufacturer Info</MudText>
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Manufacturer Name"
+                                  @bind-Value="State.CurrentProductDetails.ManufacturerName"
+                                  For="@(() => State.CurrentProductDetails.ManufacturerName)"
+                                  Class="custom-font" />
 
-        
-        <fieldset>
-            <legend>Manufacturer Info</legend>
-            <div class="input-width">
-                <label>Manufacturer Name:</label>
-                <InputText class="form-control"
-                           @bind-Value="State.CurrentProductDetails.ManufacturerName"
-                           readonly />
-            </div>
-        </fieldset>
+                    <MudDivider Class="my-4" />
 
-        <fieldset>
-            <legend>Address Info</legend>
-            
-            <div class="input-width">
-                <label>Zip Code:</label>
-                <InputText class="form-control "
-                           @bind-Value="State.CurrentProductDetails.AddressInfo.ZipCode"
-                           readonly />
-            </div>
-            <div class="input-width">
-                <label>City:</label>
-                <InputText class="form-control "
-                           @bind-Value="State.CurrentProductDetails.AddressInfo.City"
-                           readonly />
-            </div>
-            <div class="input-width">
-                <label>Country:</label>
-                <InputText class="form-control "
-                           @bind-Value="State.CurrentProductDetails.AddressInfo.Country"
-                           readonly />
-            </div>
-        </fieldset>
+                    <!-- Address Info -->
+                    <MudText Typo="Typo.h5">Address Info</MudText>
 
-    <fieldset>
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Zip Code"
+                                  @bind-Value="State.CurrentProductDetails.AddressInfo.ZipCode"
+                                  For="@(() => State.CurrentProductDetails.AddressInfo.ZipCode)"
+                                  Class="custom-font" />
 
-        <legend>Product Info</legend>
-            <div class="input-width">
-            <label>Product Designation:</label>
-                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ProductDesignation" class="form-control input-width" />
-        </div>
-        <legend>Product Info</legend>
-        <div class="input-width">
-            <label>SerialNumber:</label>
-            <InputText @bind-Value="State.CurrentProductDetails.SerialNumber" class="form-control input-width" />
-        </div>
-        <div class="input-width">
-            <label>Product Root:</label>
-                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ProductRoot" class="form-control input-width" />
-        </div>
-        <div class="input-width">
-            <label>Product Family:</label>
-                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ProductFamily" class="form-control input-width" />
-        </div>
-        <div class="input-width">
-            <label>Product Type:</label>
-                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ProductType" class="form-control input-width" />
-        </div>
-         <div class="input-width">
-            <label>Order Code:</label>
-                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.OrderCode" class="form-control input-width" />
-        </div>
-        <div class="input-width">
-            <label>Article Number:</label>
-                <InputText @bind-Value="State.CurrentProductDetails.ProductInfo.ArticleNumber" class="form-control input-width" />
-        </div>
-    </fieldset>
- 
-    <br/>
-    <div class="d-flex gap-2 mt-3">
-        <button type="submit" class="btn btn-primary">Save</button>
-        <NavLink class="btn btn-primary" href="/companyform">Back</NavLink>
-    </div>
-</EditForm>
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="City"
+                                  @bind-Value="State.CurrentProductDetails.AddressInfo.City"
+                                  For="@(() => State.CurrentProductDetails.AddressInfo.City)"
+                                  Class="custom-font" />
+
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Country"
+                                  @bind-Value="State.CurrentProductDetails.AddressInfo.Country"
+                                  For="@(() => State.CurrentProductDetails.AddressInfo.Country)"
+                                  Class="custom-font" />
+
+                    <MudDivider Class="my-4" />
+
+                    <!-- Product Info -->
+                    <MudText Typo="Typo.h5">Product Info</MudText>
+
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Product Designation"
+                                  @bind-Value="State.CurrentProductDetails.ProductInfo.ProductDesignation"
+                                  For="@(() => State.CurrentProductDetails.ProductInfo.ProductDesignation)"
+                                  Class="custom-font" />
+
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Serial Number"
+                                  @bind-Value="State.CurrentProductDetails.SerialNumber"
+                                  For="@(() => State.CurrentProductDetails.SerialNumber)"
+                                  Class="custom-font" />
+
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Product Root"
+                                  @bind-Value="State.CurrentProductDetails.ProductInfo.ProductRoot"
+                                  For="@(() => State.CurrentProductDetails.ProductInfo.ProductRoot)"
+                                  Class="custom-font" />
+
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Product Family"
+                                  @bind-Value="State.CurrentProductDetails.ProductInfo.ProductFamily"
+                                  For="@(() => State.CurrentProductDetails.ProductInfo.ProductFamily)"
+                                  Class="custom-font" />
+
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Product Type"
+                                  @bind-Value="State.CurrentProductDetails.ProductInfo.ProductType"
+                                  For="@(() => State.CurrentProductDetails.ProductInfo.ProductType)"
+                                  Class="custom-font" />
+
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Order Code"
+                                  @bind-Value="State.CurrentProductDetails.ProductInfo.OrderCode"
+                                  For="@(() => State.CurrentProductDetails.ProductInfo.OrderCode)"
+                                  Class="custom-font" />
+
+                    <MudTextField T="string" Variant="Variant.Outlined" Label="Article Number"
+                                  @bind-Value="State.CurrentProductDetails.ProductInfo.ArticleNumber"
+                                  For="@(() => State.CurrentProductDetails.ProductInfo.ArticleNumber)"
+                                  Class="custom-font" />
+
+                    <MudDivider Class="my-4" />
+
+                    <!-- Action Buttons -->
+                    <MudStack Row="true" Spacing="2" Class="mt-4">
+                        <MudButton Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Color="Color.Primary"
+                                   Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                            Save
+                        </MudButton>
+
+                        <MudButton Href="/viewproducts" Variant="Variant.Outlined" Color="Color.Secondary"
+                                   Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                            Back
+                        </MudButton>
+                    </MudStack>
+                </EditForm>
+            </MudPaper>
+</MudItem>
+</MudGrid>
    
 }
 else
 {
-    <p>No company information available. Please enter company details first.</p>
+<MudGrid>
+<MudItem xs="12" sm="12" md="6">
+    <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
+               <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 50px;">
+                <MudText Typo="Typo.h4" Align="Align.Center">No Company details found. Please enter company details</MudText>
+                <MudButton Href="/companyform" Variant="Variant.Outlined" Color="Color.Secondary"
+                           Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                    Add Company detials
+                </MudButton>
+
+                </div>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 }
 
 <br/>
 
 @code {
 
-    
-
     private async Task HandleValidSubmit()
     {
         var command = new CreateProductCommand(State.CurrentProductDetails);
         await Mediator.Send(command);
+        navigate.NavigateTo("/viewproducts");
+    }
+
+    protected override void OnInitialized()
+    {
+        // Keep the company details as-is
+        var existingCompany = State.CurrentProductDetails?.ManufacturerName;
+        var existingAddress = State.CurrentProductDetails?.AddressInfo;
+
+        // Reinitialize only product-specific fields
+        State.CurrentProductDetails = new ProductDto
+        {
+            ManufacturerName = existingCompany,
+            AddressInfo = existingAddress,
+            ProductInfo = new ProductInfo(), // reset all product fields
+            
+        };
     }
 }
+

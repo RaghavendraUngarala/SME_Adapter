@@ -11,5 +11,8 @@ namespace SMEAdapter.Domain.Interfaces
     {
         Task AddAsync(Product product, CancellationToken ct = default);
         Task<List<Product>> GetAllAsync(CancellationToken ct = default);
+        Task<Product?> GetByIdAsync(Guid id, CancellationToken ct = default);
+        Task UpdateAsync(Product product, CancellationToken cancellationToken);
+        Task DeleteAsync(Product product);
     }
 }

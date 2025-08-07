@@ -6,7 +6,7 @@
 <br/>
 <h3>Company Details</h3>
 <MudGrid>
-    <MudItem xs="12" sm="12" md="4">
+    <MudItem xs="12" sm="12" md="6">
         <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
         <EditForm Model="@company" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
         <DataAnnotationsValidator/>
@@ -32,7 +32,6 @@
                     Home Page
                 </MudButton>
             </MudStack>
-
         </EditForm>
         </MudPaper>
     </MudItem>
@@ -40,13 +39,13 @@
 @code {
     private ProductDto company = new ProductDto();
 
-    // Add this field to fix CS0103
-    private IBrowserFile uploadedFile;
+    private IBrowserFile? uploadedFile;
 
     private void HandleValidSubmit()
     {
         StateInfo.CurrentProductDetails = company;
-        Navigation.NavigateTo("/product");
+        Navigation.NavigateTo("/");
+        
     }
 
     private void HandleInvalidSubmit()
@@ -66,5 +65,5 @@
     }
 
         
-    }
+    
 }

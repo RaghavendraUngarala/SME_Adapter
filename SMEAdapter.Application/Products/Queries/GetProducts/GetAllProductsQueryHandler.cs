@@ -6,10 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SMEAdapter.Application.Products.GetProducts;
 
 
-namespace SMEAdapter.Application.Products.GetProducts
+namespace SMEAdapter.Application.Products.Queries.GetProducts
 {
     public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, List<ProductDto>>
     {

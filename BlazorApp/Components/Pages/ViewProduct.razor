@@ -2,7 +2,11 @@
 @using MediatR
 @using SMEAdapter.Application.DTOs
 @inject IMediator Mediator
-@using SMEAdapter.Application.Products.GetProducts
+@using SMEAdapter.Application.Products.Queries.GetProducts
+@using SMEAdapter.Application.Products.DeleteProduct
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <h3>Products List</h3>
 
@@ -16,33 +20,128 @@ else if (!products.Any())
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Manufacturer</th>
-                <th>Serial</th>
-                <th>City</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in products)
-            {
-                <tr>
-                    <td>@p.ManufacturerName</td>
-                    <td>@p.SerialNumber</td>
-                    <td>@p.AddressInfo.City</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+
+    <MudTable @ref="_table" T="ProductDto" Items="@products" MultiSelection = "true"  SelectionChangeable="_selectionChangeable" Hover="true"
+              @bind-SelectedItems="selectedItems"  SelectOnRowClick="false" ShowCheckBox="true"  >
+        
+        <HeaderContent>
+            <MudTh rowspan="2">Manufacturer Name</MudTh>
+            <MudTh colspan="3">Address Info</MudTh>
+            <MudTh colspan="6">Product Info</MudTh>
+            <MudTh rowspan="2">Serial Number</MudTh>
+        </HeaderContent>
+        <HeaderContent>
+            <MudTh>ManufacturerName</MudTh>
+            <MudTh>Zip Code</MudTh>
+            <MudTh>City</MudTh>
+            <MudTh>Country</MudTh>
+
+            <MudTh>Designation</MudTh>
+            <MudTh>Root</MudTh>
+            <MudTh>Family</MudTh>
+            <MudTh>Type</MudTh>
+            <MudTh>Order Code</MudTh>
+            <MudTh>Article No</MudTh>
+            <MudTh>Serial Number</MudTh>
+        </HeaderContent>
+        <RowTemplate Context="product">
+            
+
+            <MudTd DataLabel="Manufacturer Name">@product.ManufacturerName</MudTd>
+
+            <MudTd DataLabel="Zip Code">@product.AddressInfo.ZipCode</MudTd>
+            <MudTd DataLabel="City">@product.AddressInfo.City</MudTd>
+            <MudTd  DataLabel="Country">@product.AddressInfo.Country</MudTd>
+
+            <MudTd  DataLabel="Designation">@product.ProductInfo.ProductDesignation</MudTd>
+            <MudTd  DataLabel="Root">@product.ProductInfo.ProductRoot</MudTd>
+            <MudTd  DataLabel="Family">@product.ProductInfo.ProductFamily</MudTd>
+            <MudTd  DataLabel="Type">@product.ProductInfo.ProductType</MudTd>
+            <MudTd  DataLabel="Order Code">@product.ProductInfo.OrderCode</MudTd>
+            <MudTd  DataLabel="Article Number">@product.ProductInfo.ArticleNumber</MudTd>
+            <MudTd  DataLabel="Serial Number">@product.SerialNumber</MudTd>
+        </RowTemplate>
+       
+    </MudTable>
+
+  
+    
+    <div style="display: flex; gap: 20px;">
+        <MudButton Class="mt-10" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';" Disabled="@(!CanDelete)" OnClick="DeleteSelectedProduct">
+            <MudIcon Icon="@Icons.Material.Filled.Delete" /> Delete Product
+        </MudButton>
+        <MudButton Class="mt-10"  Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(!CanEdit)" OnClick="NavigateToEditPage" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" /> Edit Product
+        </MudButton>
+        <MudButton Class="mt-10" Variant="Variant.Outlined" Color="Color.Primary"  OnClick="NavigateToAddPage" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+            <MudIcon Icon="@Icons.Material.Filled.Add" /> Add Product
+        </MudButton>
+    </div>
 }
 
 @code {
     private List<ProductDto>? products;
+    private MudTable<ProductDto> _table; 
+    private HashSet<ProductDto> selectedItems = new(); 
+    private bool _selectionChangeable = true; 
+    private bool _selectOnRowClick = true; 
+    private bool CanDelete => selectedItems?.Any() == true;
+    private bool CanEdit => selectedItems?.Count == 1;
+
+
+    private bool showDialog = false;
+    private ProductDto? selectedProduct;
+  
+
+    private void NavigateToEditPage()
+    {
+        if (selectedItems.Count != 1)
+        {
+            Snackbar.Add("Please select exactly one product to edit.", Severity.Warning);
+            return;
+        }
+
+        var selectedProductId = selectedItems.First().Id;
+        Navigation.NavigateTo($"/editproduct/{selectedProductId}");
+    }
+
+    private void NavigateToAddPage()
+    {
+       
+        Navigation.NavigateTo("/product");
+    }
+
+    private async Task DeleteSelectedProduct()
+    {
+        if (selectedItems == null || !selectedItems.Any())
+            return;
+
+        bool confirmed = await DialogService.ShowMessageBox(
+            "Delete Products",
+            $"Are you sure you want to delete {selectedItems.Count} selected products?",
+            yesText: "Yes", noText: "No"
+        ) == true;
+
+        if (!confirmed)
+            return;
+
+        var idsToDelete = selectedItems.Select(p => Guid.Parse(p.Id.ToString())).ToList();
+        await Mediator.Send(new DeleteProductCommand(idsToDelete));
+        
+        await LoadProducts(); 
+
+        selectedItems.Clear();
+    }
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
         products = await Mediator.Send(new GetAllProductsQuery());
+        StateHasChanged(); // Optional but helps force UI update
     }
 }
 

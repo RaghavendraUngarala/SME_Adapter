@@ -1,8 +1,8 @@
 using BlazorApp.Components;
+using MudBlazor.Services;
 using SMEAdapter.Application;
 using SMEAdapter.Application.Services;
 using SMEAdapter.Infrastructure;
-using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +13,7 @@ builder.Services.AddSingleton<ProductInfoService>();
 builder.Services.AddApplication();
 builder.Services.AddInfrasturcture(builder.Configuration);
 builder.Services.AddMudServices();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
