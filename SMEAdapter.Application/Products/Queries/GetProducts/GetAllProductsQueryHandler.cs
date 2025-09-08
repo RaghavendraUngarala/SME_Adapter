@@ -29,7 +29,7 @@ namespace SMEAdapter.Application.Products.Queries.GetProducts
                 Id = p.Id,
                 ManufacturerName = p.ManufacturerName ?? string.Empty,
                 SerialNumber = p.SerialNumber ?? string.Empty,
-
+                ImageUrl = p.ImageUrl ?? string.Empty,
                 AddressInfo = new AddressInfo
                 {
                     ZipCode = p.AddressInfo?.ZipCode ?? string.Empty,
@@ -45,6 +45,7 @@ namespace SMEAdapter.Application.Products.Queries.GetProducts
                     ProductType = p.ProductInfo?.ProductType ?? string.Empty,
                     OrderCode = p.ProductInfo?.OrderCode ?? string.Empty,
                     ArticleNumber = p.ProductInfo?.ArticleNumber ?? string.Empty
+                    
                 }
             }).ToList();
 

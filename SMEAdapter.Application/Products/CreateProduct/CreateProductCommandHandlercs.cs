@@ -28,6 +28,7 @@ namespace SMEAdapter.Application.Products.CreateProduct
             {
                 ManufacturerName = dto.ManufacturerName,
                 SerialNumber = dto.SerialNumber,
+                ImageUrl = dto.ImageUrl,
                 AddressInfo = new AddressInfo
                 {
                     ZipCode = dto.AddressInfo.ZipCode,
@@ -42,6 +43,7 @@ namespace SMEAdapter.Application.Products.CreateProduct
                     ProductType = dto.ProductInfo.ProductType,
                     OrderCode = dto.ProductInfo.OrderCode,
                     ArticleNumber = dto.ProductInfo.ArticleNumber
+
                 }
             };
 

@@ -52,17 +52,23 @@ else
         </ToolBarContent>
         <HeaderContent>
             <MudTHeadRow  Class="header-centered">
-                <MudTh rowspan ="2">Manufacturer Name</MudTh>
-                <MudTh colspan="3">Address Info</MudTh>
+                <MudTh rowspan="2">Product Image</MudTh>
+                 @if(ShowManufacturerInfo)
+                {
+                    <MudTh rowspan ="2">Manufacturer Name</MudTh>
+                    <MudTh colspan="3">Address Info</MudTh>
+                }
                 <MudTh colspan="6">Product Info</MudTh>
                 <MudTh rowspan ="2">Serial Number</MudTh>
+               
             </MudTHeadRow>
             <MudTHeadRow Class="header-centered">
-                
+                @if(ShowManufacturerInfo)
+                {
                 <MudTh>Zip Code</MudTh>
                 <MudTh>City</MudTh>
                 <MudTh>Country</MudTh>
-
+                }
                 <MudTh>Designation</MudTh>
                 <MudTh>Root</MudTh>
                 <MudTh>Family</MudTh>
@@ -73,13 +79,27 @@ else
         </HeaderContent>
         <RowTemplate Context="product">
             
+            <MudTd DataLabel = "Product Image">
+                @if (!string.IsNullOrEmpty(product.ImageUrl))
+                {
+                    <img src="@product.ImageUrl"
+                         alt="Product Image"
+                         style="width:100px; height:100px; object-fit:contain; border-radius:4px;" />
+                }
+                else
+                {
+                    <MudText>No Image</MudText>
+                }
+            </MudTd>
 
+            @if (ShowManufacturerInfo)
+            {
             <MudTd DataLabel="Manufacturer Name" >@product.ManufacturerName</MudTd>
 
             <MudTd DataLabel="Zip Code">@product.AddressInfo.ZipCode</MudTd>
             <MudTd DataLabel="City">@product.AddressInfo.City</MudTd>
             <MudTd  DataLabel="Country">@product.AddressInfo.Country</MudTd>
-
+            }
             <MudTd  DataLabel="Designation">@product.ProductInfo.ProductDesignation</MudTd>
             <MudTd  DataLabel="Root">@product.ProductInfo.ProductRoot</MudTd>
             <MudTd  DataLabel="Family">@product.ProductInfo.ProductFamily</MudTd>
@@ -90,8 +110,11 @@ else
         </RowTemplate>
        
     </MudTable>
+    <MudSpacer/>
 
-  
+    <MudSwitch @bind-Value=@(ShowManufacturerInfo)
+               Color="Color.Primary"
+               Label="Show Manufacturer Info" />
     
     <div style="display: flex; gap: 20px;">
         <MudButton Class="mt-10" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';" Disabled="@(!CanDelete)" OnClick="DeleteSelectedProduct">
@@ -118,7 +141,11 @@ else
     private string searchString1 = "";
     private bool showDialog = false;
     private ProductDto? selectedProduct;
-  
+    private bool ShowManufacturerAndAddress = false;
+
+    private bool ShowManufacturerInfo { get; set; } = false;
+
+    
 
     private void NavigateToEditPage()
     {

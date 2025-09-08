@@ -22,6 +22,8 @@ namespace SMEAdapter.Infrastructure
         }
 
         public DbSet<Product> Products { get; set; }
+        
+
     }
 
     

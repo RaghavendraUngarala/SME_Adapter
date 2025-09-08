@@ -15,6 +15,8 @@ namespace SMEAdapter.Domain.Entities
         public string? SerialNumber { get; set; }
         public AddressInfo? AddressInfo { get; set; }
         public byte[]? CompanyLogo { get; set; }
+
+        public string? ImageUrl { get; set; }
     }
 
     public class ProductInfo

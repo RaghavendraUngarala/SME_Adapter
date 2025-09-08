@@ -1,0 +1,44 @@
+﻿@inject NavigationManager NavManager
+@inject IDialogService DialogService
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.h6" GutterBottom="true">
+            You have successfully added your first product!
+        </MudText>
+
+        <MudText Typo="Typo.body1">
+            View your product information here.
+        </MudText>
+        <MudButton Color="Color.Primary" OnClick="@ViewProducts">
+            View Products
+        </MudButton>
+    </DialogContent>
+
+    <DialogActions>
+        <!-- Button 1: Navigate to products -->
+        
+
+        <!-- Button 2: Just close the dialog -->
+        <MudButton OnClick="CloseDialog">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    // Required: dialog instance is passed automatically
+    [CascadingParameter] 
+    private IMudDialogInstance MudDialog { get; set; }
+
+    
+
+    private void ViewProducts()
+    {
+        MudDialog.Close(DialogResult.Ok(true)); // closes the dialog
+        NavManager.NavigateTo("/viewproducts");     // go to products page
+    }
+
+    private void CloseDialog()
+    {
+        MudDialog.Cancel(); // just closes without action
+    }
+}
+

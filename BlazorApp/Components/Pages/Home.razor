@@ -1,28 +1,36 @@
 ﻿@page "/"
 @inject NavigationManager Navigation
 
+<MudPaper Class="pa-6 ma-4" Elevation="4">
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        👋 Welcome to SME Adapter!
+    </MudText>
+    <MudText Typo="Typo.h6" Class="mb-4">
+        Take your first steps: set up your company and your first product.
+    </MudText>
 
+    <MudStepper CenterLabels="true" @bind-ActiveIndex="_activeIndex">
+        <!-- Step 1: Company Details -->
+        <MudStep Title="Company Details">
 
-<MudPaper Class="pa-16 ma-2" Elevation="8" Style="width: 600px; height: 300px; margin: 50px auto; text-align: center;">
-    <MudText Typo="Typo.h4">Enter Company Details</MudText>
+            <CompanyForm OnCompleted="@GoNextStep" />
+        </MudStep>
 
-    <div style="margin-top: 32px;">
-        <MudButton Variant="Variant.Filled" Color="Color.Default" @onclick="ShowForm" Style="background-color:#00796B; color:white; font-size:18px; font-weight: bold;
-             font-family: Open Sans;" Size="Size.Large">Start by entering Company Details</MudButton>
-    </div>
+        
+        <MudStep Title="First Product">
+            <Product IsFirstProduct="true" />
+        </MudStep>
+    </MudStepper>
 </MudPaper>
 
-@if (showForm)
-{
-    <!-- Render the non-routable component when button is clicked -->
-    Navigation.NavigateTo("/companyform");
-}
-
 @code {
-    private bool showForm = false;
+    private int _activeIndex = 0;
 
-    private void ShowForm()
+    private void GoNextStep()
     {
-        showForm = true;
+        
+        _activeIndex++;
     }
+
+   
 }

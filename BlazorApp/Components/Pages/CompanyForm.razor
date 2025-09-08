@@ -7,31 +7,39 @@
 
 
 <br/>
-<h3>Company Details</h3>
+
+<MudText Typo="Typo.h3" Class="pl-4">Company Details</MudText>
 <MudGrid>
     <MudItem xs="12" sm="12" md="6">
         <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
         <EditForm Model="@company" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
         <DataAnnotationsValidator/>
-       
-            <MudTextField Class="custom-font" T="string" Variant="Variant.Outlined" Label="Manufacturer Name" @bind-Value="company.ManufacturerName" For="@(() => company.ManufacturerName)" />
+
+             <MudText Typo="Typo.h5" Class="font-semibold">Manufacturer Name</MudText>
+             <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="Full legal name of the product manufacturer" Variant="Variant.Outlined"  Placeholder ="MusterGmbh" @bind-Value="company.ManufacturerName" For="@(() => company.ManufacturerName)" />
              
-            <MudDivider Class="my-4" />
+            <MudDivider Class="my-2" />
 
-            <MudText Typo="Typo.h5">Address Info</MudText>
+                <MudText Typo="Typo.h5" Class="font-semibold">Address Info</MudText>
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.h6" Class="font-semibold">Zip Code</MudText>
+                <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="ZIP or postal code for the manufacturer’s address"   Variant="Variant.Outlined" Placeholder="1234" @bind-Value="company.AddressInfo.ZipCode" For="@(() => company.AddressInfo.ZipCode)" />
+              
 
-            <MudTextField Class="custom-font" T="string" Variant="Variant.Outlined" Label="Zip Code" @bind-Value="company.AddressInfo.ZipCode" For="@(() => company.AddressInfo.ZipCode)" />
-            <MudTextField Class="custom-font" T="string" Variant="Variant.Outlined" Label="City" @bind-Value="company.AddressInfo.City" For="@(() => company.AddressInfo.City)" />
-            <MudTextField Class="custom-font" T="string" Variant="Variant.Outlined" Label="Country" @bind-Value="company.AddressInfo.Country" For="@(() => company.AddressInfo.Country)" />
+                <MudText Typo="Typo.h6" Class="font-semibold">City</MudText>
+                <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="Group of related products that share similar features" Variant="Variant.Outlined" Placeholder="Musterstadt" @bind-Value="company.AddressInfo.City" For="@(() => company.AddressInfo.City)" />
+                
+
+                <MudText Typo="Typo.h6" Class="font-semibold">Country</MudText>
+                <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="Country where the manufacturer is based" Variant="Variant.Outlined" Placeholder="Muster-Bundesland" @bind-Value="company.AddressInfo.Country" For="@(() => company.AddressInfo.Country)" />
 
             <MudText Typo="Typo.h6" Class="mt-4">Upload Company Logo</MudText>
             <InputFile OnChange="OnFilesChanged" accept=".png,.jpg,.jpeg,.pdf" />
-            <MudStack Row="true" Spacing="2" Class="mt-4">
 
-                    <MudButton Variant="Variant.Outlined" @onclick=@SaveSnackBar ButtonType="ButtonType.Submit" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+            <MudStack Row="true" Spacing="2" Class="mt-4">
+                <MudButton Variant="Variant.Outlined" @onclick=@SaveSnackBar ButtonType="ButtonType.Submit" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
                     Save
                 </MudButton>
-
                 <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
                     Home Page
                 </MudButton>
@@ -46,11 +54,18 @@
     private ProductDto company = new ProductDto();
 
     private IBrowserFile? uploadedFile;
+    
+    [Parameter] 
+    public EventCallback OnCompleted { get; set; }
 
-    private void HandleValidSubmit()
+    private async Task HandleValidSubmit()
     {
+        
+
+
         StateInfo.CurrentProductDetails = company;
-        Navigation.NavigateTo("/");
+        
+        await OnCompleted.InvokeAsync();
 
     }
 
