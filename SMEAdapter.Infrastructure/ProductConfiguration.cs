@@ -52,6 +52,11 @@ namespace SMEAdapter.Infrastructure
             builder.Property(p => p.CompanyLogo)
                    .HasColumnType("varbinary(max)")
                    .IsRequired(false);
+
+            builder.HasMany(p => p.Documents)
+               .WithOne(d => d.Product)
+               .HasForeignKey(d => d.ProductId)
+               .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

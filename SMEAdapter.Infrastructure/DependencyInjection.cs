@@ -19,8 +19,8 @@ namespace SMEAdapter.Infrastructure
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductDocumentRepository, ProductDocumentRepository>();
 
-          
             return services;
         }
    }

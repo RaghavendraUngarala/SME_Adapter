@@ -32,6 +32,8 @@ else if (!products.Any())
 }
 else
 {
+
+
     <style type="text/css">
         .mud-table-head .header-centered th {
             text-align: center;
@@ -59,15 +61,16 @@ else
                     <MudTh colspan="3">Address Info</MudTh>
                 }
                 <MudTh colspan="6">Product Info</MudTh>
-                <MudTh rowspan ="2">Serial Number</MudTh>
+                <MudTh rowspan ="2" colspan ="1">Serial Number</MudTh>
+                <MudTh colspan ="1" rowspan ="2"> Documents </MudTh>
                
             </MudTHeadRow>
             <MudTHeadRow Class="header-centered">
                 @if(ShowManufacturerInfo)
                 {
-                <MudTh>Zip Code</MudTh>
-                <MudTh>City</MudTh>
-                <MudTh>Country</MudTh>
+                    <MudTh>Zip Code</MudTh>
+                    <MudTh>City</MudTh>
+                    <MudTh>Country</MudTh>
                 }
                 <MudTh>Designation</MudTh>
                 <MudTh>Root</MudTh>
@@ -94,11 +97,11 @@ else
 
             @if (ShowManufacturerInfo)
             {
-            <MudTd DataLabel="Manufacturer Name" >@product.ManufacturerName</MudTd>
+                <MudTd DataLabel="Manufacturer Name" >@product.ManufacturerName</MudTd>
 
-            <MudTd DataLabel="Zip Code">@product.AddressInfo.ZipCode</MudTd>
-            <MudTd DataLabel="City">@product.AddressInfo.City</MudTd>
-            <MudTd  DataLabel="Country">@product.AddressInfo.Country</MudTd>
+                <MudTd DataLabel="Zip Code">@product.AddressInfo.ZipCode</MudTd>
+                <MudTd DataLabel="City">@product.AddressInfo.City</MudTd>
+                <MudTd  DataLabel="Country">@product.AddressInfo.Country</MudTd>
             }
             <MudTd  DataLabel="Designation">@product.ProductInfo.ProductDesignation</MudTd>
             <MudTd  DataLabel="Root">@product.ProductInfo.ProductRoot</MudTd>
@@ -107,6 +110,10 @@ else
             <MudTd  DataLabel="Order Code">@product.ProductInfo.OrderCode</MudTd>
             <MudTd  DataLabel="Article Number">@product.ProductInfo.ArticleNumber</MudTd>
             <MudTd  DataLabel="Serial Number">@product.SerialNumber</MudTd>
+            <MudButton OnClick="@(() => ViewDocuments(product.Id))" Variant="Variant.Outlined" Style="background-color:#0D47A1; color:white; font-weight:bold;">
+                View Documents
+            </MudButton>
+
         </RowTemplate>
        
     </MudTable>
@@ -129,9 +136,10 @@ else
     </div>
 }
 
+
 @code {
     private List<ProductDto>? products;
-    private MudTable<ProductDto> _table; 
+    private MudTable<ProductDto>? _table; 
     private HashSet<ProductDto> selectedItems = new(); 
     private bool _selectionChangeable = true; 
     private bool _selectOnRowClick = true; 
@@ -145,7 +153,7 @@ else
 
     private bool ShowManufacturerInfo { get; set; } = false;
 
-    
+
 
     private void NavigateToEditPage()
     {
@@ -161,7 +169,7 @@ else
 
     private void NavigateToAddPage()
     {
-       
+
         Navigation.NavigateTo("/product");
     }
 
@@ -181,7 +189,7 @@ else
 
         var idsToDelete = selectedItems.Select(p => Guid.Parse(p.Id.ToString())).ToList();
         await Mediator.Send(new DeleteProductCommand(idsToDelete));
-        
+
         await LoadProducts(); 
 
         DeleteSnackBar(); // Show snackbar after deletion
@@ -228,6 +236,11 @@ else
             return true;
 
         return false;
+    }
+    private void ViewDocuments(Guid productId)
+    {
+        
+        Navigation.NavigateTo($"/testpage/{productId}");
     }
 
 }

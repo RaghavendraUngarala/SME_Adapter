@@ -17,6 +17,7 @@ namespace SMEAdapter.Domain.Entities
         public byte[]? CompanyLogo { get; set; }
 
         public string? ImageUrl { get; set; }
+        public ICollection<ProductDocument>? Documents { get; set; }
     }
 
     public class ProductInfo

@@ -19,10 +19,12 @@ namespace SMEAdapter.Infrastructure
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new ProductConfiguration());
+            modelBuilder.ApplyConfiguration(new ProductDocumentConfiguration());
         }
 
         public DbSet<Product> Products { get; set; }
-        
+        public DbSet<ProductDocument> ProductDocuments { get; set; }
+
 
     }
 

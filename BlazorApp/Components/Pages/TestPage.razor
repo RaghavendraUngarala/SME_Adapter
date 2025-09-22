@@ -1,40 +1,141 @@
-﻿@page "/testpage"
-@inject NavigationManager Navigation
+﻿@page "/testpage/{productId:guid}"
+@using MediatR;
+@inject IMediator Mediator;
+@using SMEAdapter.Application.DTOs;
+@using SMEAdapter.Application.ProductDocuments.AddProductDocuments;
+@using SMEAdapter.Application.ProductDocuments.GetProductDocuments;
 
-<MudPaper Class="pa-6 ma-4" Elevation="4">
-    <MudText Typo="Typo.h4" GutterBottom="true">
-        👋 Welcome to SME Adapter!
-    </MudText>
-    <MudText Typo="Typo.h6" Class="mb-4">
-        Take your first steps: set up your company and your first product.
-    </MudText>
+<MudGrid Style= " height:100%; margin: 0; padding: 0;">
+    <MudItem xs="12">
+        <MudPaper Class="pa-2 ma-2" Elevation="1" style="height:100% " >
+    
+            <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center" Style="height: 100%;">
+                <MudText Typo="Typo.h4">Add your files </MudText>
+                <InputFile onchange="FileUploaded"></InputFile>
+           </MudStack>
 
-    <MudStepper CenterLabels="true"  @bind-ActiveIndex="_activeIndex">
-        <!-- Step 1: Company Details -->
-        <MudStep Title="Company Details">
-                 
-            <CompanyForm OnCompleted="@GoNextStep"/>
-        </MudStep>
+        </MudPaper>
+    </MudItem>
 
-        <!-- Step 2: First Product -->
-        <MudStep Title="First Product">
-            <Product IsFirstProduct="true" />
-        </MudStep>
-    </MudStepper>
-</MudPaper>
+    <MudItem xs="12" md= "5">
+        <MudPaper Class = "pa-2  mt-2 p-2">
+
+            <MudTable Items="@uploadedFiles" Dense="true" Hover="true" Elevation="1" HeaderClass="table-head-bordered" MultiSelection="true" Breakpoint="Breakpoint.Sm" Striped="true" Outlined="true" SelectOnRowClick="true"
+                      Bordered="true" CustomHeader="true"  >
+                    <HeaderContent>
+                        <MudTh></MudTh>
+                        <MudTh>S.No</MudTh>
+                        <MudTh>File Name</MudTh>  
+                    </HeaderContent>
+                    <RowTemplate>
+                    <MudTd>@(uploadedFiles.IndexOf(context) + 1)</MudTd>
+                    <MudTd>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => SelectFile(context))">
+                            @context.Name
+                        </MudButton>
+                    </MudTd>
+                       
+                        
+                    </RowTemplate>
+                </MudTable>
+          </MudPaper>
+     </MudItem>
+
+    <MudItem xs="12" md="7" Style="height: 100vh; overflow: auto;">
+            @if (selectedFile != null)
+            {
+            <MudPaper Class="pa-2 mt-2  " Elevation="12" Style="height: 100%;width:100%; overflow: auto;" >
+                        <MudText Typo="Typo.h6">Preview: @selectedFile.Name</MudText>
+                            
+                        @if (selectedFile.ContentType.StartsWith("image/"))
+                        {
+                            <!-- Image preview -->
+                            <img src="@selectedFile.Base64Data" alt="@selectedFile.Name" style="max-width:100%; max-height:500px;" />
+                        }
+                        else if (selectedFile.ContentType == "application/pdf")
+                        {
+                            <!-- PDF preview -->
+                                <iframe src="@selectedFile.Base64Data"
+                                        style="width: 100%; height: 100%; border: none;"></iframe>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body1">Preview not available for this file type.</MudText>
+                        }
+                          
+                    </MudPaper>
+            }
+    </MudItem>
+ </MudGrid>
+   
+
+
+
 
 @code {
-    private int _activeIndex = 0;
 
-    private void GoNextStep()
+    [Parameter]
+    public Guid productId { get; set; }
+    private List<FileData> uploadedFiles = new();
+    private FileData? selectedFile;
+
+    private async Task FileUploaded(InputFileChangeEventArgs e)
     {
-        Console.WriteLine("➡️ Parent GoNextStep called");
-        _activeIndex++;
+        foreach (var file in e.GetMultipleFiles())
+        {
+            using var ms = new MemoryStream();
+            await file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024).CopyToAsync(ms); // Max 50 MB
+            var fileBytes = ms.ToArray();
+
+            // Create DTO for the command
+            var dto = new ProductDocumentDto
+            {
+                ProductId = productId,
+                FileName = file.Name,
+                ContentType = file.ContentType,
+                Data = fileBytes
+            };
+
+            // Send to your CQRS handler to save in DB
+            await Mediator.Send(new AddProductDocumentCommand(dto));
+        }
+
+        // Optional: clear uploadedFiles list if you don't want to show previews yet
+        await LoadDocuments();
     }
 
-    private void FinishSetup()
+    protected override async Task OnInitializedAsync()
     {
-        // maybe navigate to dashboard or show success
-        Console.WriteLine("Setup complete!");
+        await LoadDocuments();
     }
+
+    private async Task LoadDocuments()
+    {
+        var docs = await Mediator.Send(new GetProductDocumentCommand(productId));
+
+        uploadedFiles = docs.Select(d => new FileData
+        {
+            Name = d.FileName,
+            ContentType = d.ContentType,
+            Base64Data = $"data:{d.ContentType};base64,{Convert.ToBase64String(d.Data)}"
+        }).ToList();
+
+        StateHasChanged();
+    }
+
+    private void SelectFile(FileData file)
+    {
+        selectedFile = file;
+    }
+
+    public class FileData
+    {
+        public string? Name { get; set; }
+        public long Size { get; set; }
+        public string? ContentType { get; set; }
+        public string? Base64Data { get; set; }  // needed for preview
+    }
+    private int rowNumber = 0;
+
+    
 }

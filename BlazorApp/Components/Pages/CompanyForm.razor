@@ -21,7 +21,9 @@
             <MudDivider Class="my-2" />
 
                 <MudText Typo="Typo.h5" Class="font-semibold">Address Info</MudText>
-                <MudDivider Class="my-2" />
+
+            <MudDivider Class="my-2" />
+
                 <MudText Typo="Typo.h6" Class="font-semibold">Zip Code</MudText>
                 <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="ZIP or postal code for the manufacturer’s address"   Variant="Variant.Outlined" Placeholder="1234" @bind-Value="company.AddressInfo.ZipCode" For="@(() => company.AddressInfo.ZipCode)" />
               

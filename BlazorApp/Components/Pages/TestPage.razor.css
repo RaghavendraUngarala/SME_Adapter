@@ -1,0 +1,10 @@
+﻿.upload-bar {
+    border: 2px dashed #0D47A1; /* your custom color */
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    text-align: center;
+}
+
+.upload-bar:hover {
+    background-color: #e3f2fd;
+}

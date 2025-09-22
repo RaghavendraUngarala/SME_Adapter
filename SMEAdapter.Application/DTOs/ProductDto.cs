@@ -19,6 +19,7 @@ namespace SMEAdapter.Application.DTOs
         public Guid CompanyId { get; set; }
 
         public string? ImageUrl { get; set; }
+        public ICollection<ProductDocumentDto> Documents { get; set; }
 
     }
 
