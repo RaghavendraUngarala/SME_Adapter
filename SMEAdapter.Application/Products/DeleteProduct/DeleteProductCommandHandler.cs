@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace SMEAdapter.Application.Products.DeleteProduct
 {
-    public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand, Unit>
+    public class DeleteProductDocumentCommandHandler : IRequestHandler<DeleteProductCommand, Unit>
     {
         private readonly IProductRepository _repository;
 
-        public DeleteProductCommandHandler(IProductRepository repository)
+        public DeleteProductDocumentCommandHandler(IProductRepository repository)
         {
             _repository = repository;
         }

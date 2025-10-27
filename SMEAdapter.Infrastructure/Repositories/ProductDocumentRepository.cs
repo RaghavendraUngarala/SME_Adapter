@@ -25,5 +25,27 @@ namespace SMEAdapter.Infrastructure.Repositories
                 .Where(d => d.ProductId == productId)
                 .ToListAsync(ct);
         }
+        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var document = await _context.ProductDocuments.FindAsync( id , cancellationToken);
+            if (document != null)
+            {
+                _context.ProductDocuments.Remove(document);
+            }
+        }
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        public async Task<ProductDocument?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        {
+            return await _context.ProductDocuments
+                .FirstOrDefaultAsync(d => d.Id == id, ct);
+        }
+        public async Task UpdateAsync(ProductDocument document, CancellationToken cancellationToken)
+        {
+            _context.ProductDocuments.Update(document);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

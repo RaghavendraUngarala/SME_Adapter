@@ -29,7 +29,7 @@ namespace SMEAdapter.Application.Products.UpdateProduct
             // Update fields
             existingProduct.ManufacturerName = dto.ManufacturerName;
             existingProduct.SerialNumber = dto.SerialNumber;
-
+            existingProduct.ImageUrl = dto.ImageUrl;
             existingProduct.AddressInfo = new AddressInfo
             {
                 ZipCode = request.Product.AddressInfo.ZipCode,

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using MediatR;
 using SMEAdapter.Application.DTOs;
 
-namespace SMEAdapter.Application.ProductDocuments.GetProductDocuments
+namespace SMEAdapter.Application.ProductDocuments.Queries.GetProductDocuments
 {
     
 
-    public record GetProductDocumentCommand(Guid ProductId) : IRequest<List<ProductDocumentDto>>;
+    public record GetAllProductDocumentsQuery(Guid ProductId) : IRequest<List<ProductDocumentDto>>;
 
 }

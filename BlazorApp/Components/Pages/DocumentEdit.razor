@@ -1,0 +1,31 @@
+﻿@page "/productdocument/edit/{productId:guid}/{documentId:guid}"
+
+
+@using SMEAdapter.Application.DTOs;
+@using SMEAdapter.Application.ProductDocuments.AddProductDocuments;
+@using MediatR;
+@inject NavigationManager Navigation
+@inject IMediator Mediator;
+@inject ISnackbar Snackbar
+@using BlazorApp.Components.ProductDocuments;
+
+
+<MudPaper Class="pa-6" Outlined="true">
+    <MudText Typo="Typo.h5" Class="mb-4">Edit Product Document</MudText>
+
+    <AddDocumentForm ProductId="@productId"
+                         DocumentId="@documentId"
+                         IsEditMode="true"
+                         OnSaved="@OnDocumentUpdated" />
+</MudPaper>
+
+@code {
+    [Parameter] public Guid productId { get; set; }
+    [Parameter] public Guid documentId { get; set; }
+
+    private async Task OnDocumentUpdated(ProductDocumentDto doc)
+    {
+        Snackbar.Add("Document updated successfully!", Severity.Success);
+        Navigation.NavigateTo($"/productdocument/{productId}");
+    }
+}

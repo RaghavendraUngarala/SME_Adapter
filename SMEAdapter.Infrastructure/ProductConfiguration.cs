@@ -20,6 +20,9 @@ namespace SMEAdapter.Infrastructure
             builder.Property(p => p.ManufacturerName).HasMaxLength(200);
 
             builder.Property(p => p.SerialNumber);
+            builder.Property(p => p.ImageUrl)
+                   .HasMaxLength(500)
+                   .IsRequired(false);
 
             // --- Owned type: ProductInfo ---
             builder.OwnsOne(p => p.ProductInfo, pi =>

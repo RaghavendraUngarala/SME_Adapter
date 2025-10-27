@@ -1,5 +1,8 @@
 ﻿@page "/"
 @inject NavigationManager Navigation
+@using BlazorApp.Components.Product;
+@inject SMEAdapter.Application.Services.CompanyInfoService CompanyInfo
+@using SMEAdapter.Application.DTOs;
 
 <MudPaper Class="pa-6 ma-4" Elevation="4">
     <MudText Typo="Typo.h4" GutterBottom="true">
@@ -18,18 +21,30 @@
 
         
         <MudStep Title="First Product">
-            <Product IsFirstProduct="true" />
+            @if (CompanyInfo.CurrentCompany != null)
+            {
+                <ProductForm IsFirstProduct="true" />
+            }
+            else
+            {
+                <MudText Typo="Typo.h6" Color="Color.Error">Please complete company details first.</MudText>
+            }
         </MudStep>
     </MudStepper>
 </MudPaper>
 
 @code {
     private int _activeIndex = 0;
-
-    private void GoNextStep()
+    private CompanyDto? _company;
+    private async Task GoNextStep(CompanyDto company)
     {
-        
+        _company = company;
+
+        // Also keep it in the service for consistency
+        CompanyInfo.CurrentCompany = company;
+        Console.WriteLine("CompanyInfo.CurrentCompany");
         _activeIndex++;
+        await InvokeAsync(StateHasChanged);
     }
 
    

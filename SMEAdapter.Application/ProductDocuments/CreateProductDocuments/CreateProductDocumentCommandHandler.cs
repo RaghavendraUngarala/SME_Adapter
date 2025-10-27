@@ -11,16 +11,16 @@ using System.Threading.Tasks;
 
 namespace SMEAdapter.Application.ProductDocuments.AddProductDocuments
 {
-    public class AddProductDocumentHandler : IRequestHandler<AddProductDocumentCommand, Guid>
+    public class CreateProductDocumentHandler : IRequestHandler<CreateProductDocumentCommand, Guid>
     {
         private readonly IProductDocumentRepository _repository;
 
-        public AddProductDocumentHandler(IProductDocumentRepository repository)
+        public CreateProductDocumentHandler(IProductDocumentRepository repository)
         {
             _repository = repository;
         }
 
-        public async Task<Guid> Handle(AddProductDocumentCommand request, CancellationToken cancellationToken)
+        public async Task<Guid> Handle(CreateProductDocumentCommand request, CancellationToken cancellationToken)
         {
             var dto = request.ProductDocument;
 

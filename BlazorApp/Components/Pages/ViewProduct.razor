@@ -170,7 +170,7 @@ else
     private void NavigateToAddPage()
     {
 
-        Navigation.NavigateTo("/product");
+        Navigation.NavigateTo("/addproduct");
     }
 
     private async Task DeleteSelectedProduct()
@@ -240,7 +240,7 @@ else
     private void ViewDocuments(Guid productId)
     {
         
-        Navigation.NavigateTo($"/testpage/{productId}");
+        Navigation.NavigateTo($"/productdocument/{productId}");
     }
 
 }

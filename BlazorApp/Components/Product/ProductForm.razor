@@ -1,4 +1,4 @@
-﻿@page "/product"
+﻿
 
 @using MediatR;
 @using SMEAdapter.Application.DTOs;
@@ -8,6 +8,10 @@
 @inject IMediator Mediator
 @inject ISnackbar  Snackbar
 @inject IDialogService DialogService
+@using BlazorApp.Components.Pages;
+@using SMEAdapter.Application.Products.Queries.GetProducts
+@using SMEAdapter.Application.Products.Queries.GetProductById
+@using SMEAdapter.Application.Products.UpdateProduct
 
 @if (product != null)
 {
@@ -22,7 +26,16 @@
                      <MudExpansionPanel  Expanded="false" TextColor="Color.Primary" HeaderClass="mud-expand-panel-header">
                         <!-- Manufacturer Info -->
                             <TitleContent>
-                                <MudText Typo="Typo.h4" Class="header-text">Manufacturer Info</MudText>
+                                <MudStack Row="true" AlignItems="AlignItems.Baseline">
+                                    <MudText Typo="Typo.h4" Class="header-text">Manufacturer Info</MudText>
+                                    <MudIconButton Icon="@Icons.Material.Filled.HelpOutline"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   Target="_blank"
+                                                   Href="https://github.com/Ra-one77/SME_Adapter/wiki/Company-Details"
+                                                   Style="margin-top: 10px;"
+                                                   title="Help: Company Name" />
+                                </MudStack>
                             </TitleContent>
                             <ChildContent>
                                 <MudText Typo="Typo.h5" Class="font-semibold">Manufacturer Name</MudText>
@@ -32,8 +45,10 @@
                                                     Class="custom-font" Placeholder="MusterGmbh" />
 
                                 <!-- Address Info -->
-
+                               
                                 <MudText Typo="Typo.h5" Class="font-semibold">Address Info</MudText>
+                             
+                                
                                 <MudDivider Class="my-2"></MudDivider>
 
                                 <MudText Typo="Typo.h6" Class="font-semibold">ZipCode</MudText>
@@ -63,7 +78,16 @@
                      <MudExpansionPanel  Expanded="true" TextColor="Color.Primary" HeaderClass="mud-expand-panel-header">
                         <!-- Manufacturer Info -->
                             <TitleContent>
-                                <MudText Typo="Typo.h4" Class="header-text">Product Info</MudText>
+                                 <MudStack Row="true" AlignItems="AlignItems.Baseline">
+                                    <MudText Typo="Typo.h4" Class="header-text">Product Info</MudText>
+                                    <MudIconButton Icon="@Icons.Material.Filled.HelpOutline"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   Target="_blank"
+                                                   Href="https://github.com/Ra-one77/SME_Adapter/wiki/Product-Info"
+                                                   Style="margin-top: 10px;"
+                                                   title="Help: Company Name" />
+                                 </MudStack>
                             </TitleContent>
                      <ChildContent>
 
@@ -110,18 +134,58 @@
                                   For="@(() => product.ProductInfo.ArticleNumber)"
                                   Class="custom-font" />
 
-                                <MudText Typo="Typo.h6" Class="mt-4">Upload Product Image</MudText>
-                                <InputFile OnChange="OnFilesChanged" accept=".png,.jpg,.jpeg,.pdf" />
-                    </ChildContent>
+
+                                <MudText Typo="Typo.h6" Class="mt-4">Product Image</MudText>
+
+                                    <MudFileUpload T="IBrowserFile"
+                                                   MaximumFileCount="1"
+                                                   Accept="image/*"
+                                                   FilesChanged="OnFilesChanged">
+                                            <ActivatorContent>
+                                                <MudButton Variant="Variant.Filled"
+                                                           Color="Color.Secondary"
+                                                           StartIcon="@Icons.Material.Filled.CloudUpload">
+                                                    @(IsEditMode ? "Replace Image" : "Upload Image")
+                                                </MudButton>
+                                            </ActivatorContent>
+
+                                    <SelectedTemplate Context="selectedFile">
+                                                @if (selectedFile != null)
+                                                {
+                                                    <MudText>@selectedFile.Name</MudText>
+                                                }
+                                                else if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
+                                                {
+                                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                        <MudAvatar Size="Size.Medium" Image="@product.ImageUrl" />
+                                                        <MudText>@($"Current: {Path.GetFileName(product.ImageUrl)}")</MudText>
+                                                    </MudStack>
+                                                }
+                                                else
+                                                {
+                                                    <MudText>No image selected</MudText>
+                                                }
+                                            </SelectedTemplate>
+                                    </MudFileUpload>
+
+                                    @if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
+                                    {
+                                        <MudImage Src="@product.ImageUrl"
+                                            Alt="Product Image"
+                                            Width="150"
+                                            Height="150"
+                                            Style="border-radius: 8px; object-fit: cover; margin-top: 10px;" />
+                                    }
+                            </ChildContent>
                 </MudExpansionPanel>
                 </MudExpansionPanels>
                     <MudDivider Class="my-4" />
 
                     <!-- Action Buttons -->
                     <MudStack Row="true" Spacing="2" Class="mt-4">
-                        <MudButton @onclick=@SaveSnackBar Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Color="Color.Primary"
+                        <MudButton  Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Color="Color.Primary"
                                    Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
-                            Save
+                            @(IsEditMode ? "Update" : "Save")
                         </MudButton>
 
                         <MudButton Href="/viewproducts" Variant="Variant.Outlined" Color="Color.Secondary"
@@ -158,59 +222,91 @@ else
 @code {
 
     [Parameter] public bool IsFirstProduct { get; set; }
-   
+
+    [Parameter] public bool IsEditMode { get; set; } = false;
+
+    [Parameter] public Guid ProductId { get; set; }
+
     private ProductDto? product;
-    
 
-    private async Task OnFilesChanged(InputFileChangeEventArgs e)
+    private string productImageUrl;
+
+
+    private IBrowserFile? _selectedFile;
+
+    private async Task OnFilesChanged(IBrowserFile files)
     {
-        var file = e.File;
-        var path = Path.Combine("wwwroot/images", file.Name);
+        _selectedFile = files;
+        if (_selectedFile == null)
+            return;
 
-        using var fs = new FileStream(path, FileMode.Create);
-        await file.OpenReadStream().CopyToAsync(fs);
+        await SaveImageFile(_selectedFile);
+        StateHasChanged();
+    }
 
-        product.ImageUrl = $"images/{file.Name}";
+    private async Task SaveImageFile(IBrowserFile file)
+    {
+        var maxSize = 10 * 1024 * 1024; // 10 MB
+        var fileName = file.Name;
+        var uploadPath = Path.Combine("wwwroot/images", fileName);
+
+        await using var fs = new FileStream(uploadPath, FileMode.Create);
+        await file.OpenReadStream(maxSize).CopyToAsync(fs);
+
+        product.ImageUrl = $"/images/{fileName}";
+        Console.WriteLine($"{product.ImageUrl}");
     }
 
     private async Task HandleValidSubmit()
     {
-        var command = new CreateProductCommand(product);
-        await Mediator.Send(command);
-
-        
-
-        if (IsFirstProduct)
+        if (IsEditMode && _selectedFile == null)
+            product.ImageUrl = productImageUrl;
+        Console.WriteLine($"Loaded product image URL: {productImageUrl}");
+        if (IsEditMode)
         {
-            await ShowFirstProductDialog();
+            await Mediator.Send(new UpdateProductCommand(product));
+            EditSnackBar();
         }
         else
         {
-            navigate.NavigateTo("/viewproducts");
+            await Mediator.Send(new CreateProductCommand(product));
+            SaveSnackBar();
         }
+
+        if (IsFirstProduct)
+            await ShowFirstProductDialog();
+        else
+            navigate.NavigateTo("/viewproducts");
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Keep the company details as-is
-        var existingCompany = CompanyInfo.CurrentCompany?.CompanyManufacturerName;
-        var existingAddress = CompanyInfo.CurrentCompany?.CompanyAddressInfo;
 
-        // Reinitialize only product-specific fields
-        product = new ProductDto
+        if (IsEditMode)
         {
-            ManufacturerName = existingCompany,
-            AddressInfo = existingAddress != null
-            ? new AddressInfo
+            product = await Mediator.Send(new GetProductByIdQuery(ProductId));
+            productImageUrl = product.ImageUrl ?? string.Empty;
+        }
+        else
+        {
+            // 🔹 Prepare new product template (like before)
+            var existingCompany = CompanyInfo.CurrentCompany?.CompanyManufacturerName;
+            var existingAddress = CompanyInfo.CurrentCompany?.CompanyAddressInfo;
+
+            product = new ProductDto
             {
-                City = existingAddress.City,
-                ZipCode = existingAddress.ZipCode,
-                Country = existingAddress.Country
-            }
-            : new AddressInfo(),
-            ProductInfo = new ProductInfo(), // reset all product fields
-            
-        };
+                ManufacturerName = existingCompany,
+                AddressInfo = existingAddress != null
+                    ? new AddressInfo
+                    {
+                        City = existingAddress.City,
+                        ZipCode = existingAddress.ZipCode,
+                        Country = existingAddress.Country
+                    }
+                    : new AddressInfo(),
+                ProductInfo = new ProductInfo(),
+            };
+        }
     }
 
     private void SaveSnackBar()
@@ -236,9 +332,15 @@ else
             options: options
         );
 
-        var result = await dialogRef.Result;
+        var result = await dialogRef.Result; 
 
-        
+    }
+    private void EditSnackBar()
+    {
+        Snackbar.Add("Changes have been saved succesfully", Severity.Success, config =>
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        });
 
     }
 }

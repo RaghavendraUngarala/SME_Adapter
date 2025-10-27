@@ -1,0 +1,19 @@
+﻿@page "/editproduct/{Id:guid}"
+@inject IMediator Mediator
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@using SMEAdapter.Application.DTOs
+@using SMEAdapter.Application.Products.Queries.GetProducts
+@using SMEAdapter.Application.Products.Queries.GetProductById
+@using SMEAdapter.Application.Products.UpdateProduct
+@using BlazorApp.Components.Product
+
+
+    <ProductForm IsEditMode="true" ProductId="@Id" />
+
+
+@code {
+
+    [Parameter] public Guid Id { get; set; }
+    
+}

@@ -1,4 +1,4 @@
-﻿@page "/companyform"
+﻿
 @using SMEAdapter.Application.DTOs
 @using System.IO
 @inject NavigationManager Navigation
@@ -7,8 +7,16 @@
 
 
 <br/>
-
-<MudText Typo="Typo.h3" Class="pl-4">Company Details</MudText>
+<MudStack Row="true" AlignItems="AlignItems.Baseline">
+    <MudText Typo="Typo.h3" Class="pl-4">Company Details</MudText>
+    <MudIconButton Icon="@Icons.Material.Filled.HelpOutline"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Target="_blank"
+                                       Href="https://github.com/Ra-one77/SME_Adapter/wiki/Company-Details"
+                                       Style="margin-top: 10px;"
+                                       title="Help: Company Name" />
+</MudStack>
 <MudGrid>
     <MudItem xs="12" sm="12" md="6">
         <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
@@ -16,8 +24,9 @@
         <DataAnnotationsValidator/>
 
              <MudText Typo="Typo.h5" Class="font-semibold">Manufacturer Name</MudText>
-             <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="Full legal name of the product manufacturer" Variant="Variant.Outlined"  Placeholder ="MusterGmbh" @bind-Value="company.CompanyManufacturerName" For="@(() => company.CompanyManufacturerName)" />
-             
+                
+                 <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="Full legal name of the product manufacturer" Variant="Variant.Outlined"  Placeholder ="MusterGmbh" @bind-Value="company.CompanyManufacturerName" For="@(() => company.CompanyManufacturerName)" />
+                    
             <MudDivider Class="my-2" />
 
                 <MudText Typo="Typo.h5" Class="font-semibold">Address Info</MudText>
@@ -39,7 +48,7 @@
             <InputFile OnChange="OnFilesChanged" accept=".png,.jpg,.jpeg,.pdf" />
 
             <MudStack Row="true" Spacing="2" Class="mt-4">
-                <MudButton Variant="Variant.Outlined" @onclick=@SaveSnackBar ButtonType="ButtonType.Submit" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                <MudButton Variant="Variant.Outlined"  ButtonType="ButtonType.Submit" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
                     Save
                 </MudButton>
                 <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
@@ -53,19 +62,20 @@
 
 
 @code {
-  
+
     private CompanyDto company = new CompanyDto();
 
     private IBrowserFile? uploadedFile;
 
     [Parameter] 
-    public EventCallback OnCompleted { get; set; }
+    public EventCallback<CompanyDto> OnCompleted { get; set; }
 
     private async Task HandleValidSubmit()
     {
         CompanyInfo.SetCompany(company);
- 
-        await OnCompleted.InvokeAsync();
+        SaveSnackBar();
+
+        await InvokeAsync(() => OnCompleted.InvokeAsync(company));
     }
 
     private void HandleInvalidSubmit()

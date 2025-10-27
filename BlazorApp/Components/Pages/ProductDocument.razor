@@ -1,14 +1,174 @@
-﻿@page "/productdocument"
+﻿@page "/productdocument/{productId:guid}"
 
 
-<MudPaper Class="pa-6 ma-4" Elevation="4">
-   
 
-    
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigate;
+@using MediatR;
+@inject IMediator Mediator;
+@using SMEAdapter.Application.DTOs;
+@using SMEAdapter.Application.ProductDocuments.AddProductDocuments;
+@using SMEAdapter.Application.ProductDocuments.Queries.GetProductDocuments;
+@using SMEAdapter.Application.ProductDocuments.Queries.GetProductDocumentsById;
+@using SMEAdapter.Application.ProductDocuments.DeleteProductDocuments;
+
+@using BlazorApp.Components.ProductDocuments;
+
+<MudGrid Class="pa-2" Spacing="3">
+    <!-- Header + Add Form -->
+    <MudItem xs="12">
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudStack Spacing="2">
+                <MudStack Row = "true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h5">Add your Documents here</MudText>
+                    @if (!showAddForm)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="ToggleAddForm">
+                            Add Document
+                        </MudButton>
+                    }
+                </MudStack>
+
+                @if (showAddForm)
+                {
+                    <AddDocumentForm  @bind-FormValue= "showAddForm" ProductId="ProductId" OnSaved="HandleSaved" />
+                }
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+
+    <!-- Table -->
+    <MudItem xs="12">
+        <MudPaper Class="pa-4 mt-2" Elevation="1">
+            @if (!showAddForm)
+            {
+                <!-- Table -->
+                <MudTable Items="@documents" MultiSelection="true" @bind-SelectedItems="selectedDocuments"
+                          Dense="true" Hover="true" Striped="true" Outlined="true" Bordered="true">
+                    <HeaderContent>
+                        <MudTh>S.No</MudTh>
+                        <MudTh>File Name</MudTh>
+                        <MudTh>Title</MudTh>
+                        <MudTh>Uploaded</MudTh>
+                        <MudTh>Edit Document</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="S.No">@(documents.IndexOf(context) + 1)</MudTd>
+                        <MudTd DataLabel="File Name">@context.FileName</MudTd>
+                        <MudTd Datalabel="Title">@context.Title</MudTd>
+                        <MudTd DataLabel="Uploaded">@context.StateDate?.ToShortDateString()</MudTd>
+                        <MudButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   OnClick="() => EditDocument(context.Id)"> Edit Document
+                        </MudButton>
+                    </RowTemplate>
+                </MudTable>
+
+                <MudItem xs="12" Class="mt-4">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="GoBack">
+                        Back to Products
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Error"
+                               Disabled="@(!CanDelete)"
+                               OnClick="DeleteSelectedDocuments">
+                        <MudIcon Icon="@Icons.Material.Filled.Delete" />
+                        Delete
+                    </MudButton>
+                    
+                </MudItem>
+            }
+
+        </MudPaper>
+    </MudItem>
+
+</MudGrid>
 
 
-</MudPaper>
+
+
 
 @code {
 
+    [Parameter]
+    public Guid ProductId { get; set; }
+
+    private List<ProductDocumentDto> documents = new();
+    private HashSet<ProductDocumentDto> selectedDocuments = new();
+
+    private bool showAddForm = false;
+
+    private bool CanDelete => selectedDocuments?.Any() == true;
+
+    private void ToggleAddForm()
+    {
+        showAddForm = !showAddForm;
+    }
+
+    private async Task HandleSaved(ProductDocumentDto dto)
+    {
+        await LoadDocuments();
+        showAddForm = false;
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDocuments();
+    }
+
+    private async Task LoadDocuments()
+    {
+        var docs = await Mediator.Send(new GetAllProductDocumentsQuery(ProductId));
+
+        documents = docs.ToList();   // assign the DTOs to your table source
+
+        StateHasChanged();
+    }
+
+
+    private int rowNumber = 0;
+
+    private void GoBack()
+    {
+        Navigate.NavigateTo("/viewproducts");
+    }
+
+    private async Task DeleteSelectedDocuments()
+    {
+        if (selectedDocuments == null || !selectedDocuments.Any())
+            return;
+
+        bool confirmed = await DialogService.ShowMessageBox(
+            "Delete Documents",
+            $"Are you sure you want to delete {selectedDocuments.Count} selected documents?",
+            yesText: "Yes", noText: "No"
+        ) == true;
+
+        if (!confirmed)
+            return;
+
+        var idsToDelete = selectedDocuments.Select(d => d.Id).ToList();
+      
+        await Mediator.Send(new DeleteProductDocumentCommand(idsToDelete));
+
+        await LoadDocuments();
+        ShowDeleteSnackbar();
+        selectedDocuments.Clear();
+    }
+
+    private void ShowDeleteSnackbar()
+    {
+        Snackbar.Add("Selected documents have been deleted.", Severity.Info, config =>
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        });
+    }
+    private void EditDocument(Guid documentId)
+    {
+        Navigate.NavigateTo($"/productdocument/edit/{ProductId}/{documentId}");
+    }
 }

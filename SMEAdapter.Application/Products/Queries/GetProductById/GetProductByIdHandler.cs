@@ -29,7 +29,7 @@ namespace SMEAdapter.Application.Products.Queries.GetProductById
                 Id = product.Id,
                 ManufacturerName = product.ManufacturerName ?? string.Empty,
                 SerialNumber = product.SerialNumber ?? string.Empty,
-
+                ImageUrl = product.ImageUrl ?? string.Empty,
                 AddressInfo = new AddressInfo
                 {
                     ZipCode = product.AddressInfo?.ZipCode ?? string.Empty,
