@@ -97,19 +97,18 @@ else
 
             @if (ShowManufacturerInfo)
             {
-                <MudTd DataLabel="Manufacturer Name" >@product.ManufacturerName</MudTd>
-
-                <MudTd DataLabel="Zip Code">@product.AddressInfo.ZipCode</MudTd>
-                <MudTd DataLabel="City">@product.AddressInfo.City</MudTd>
-                <MudTd  DataLabel="Country">@product.AddressInfo.Country</MudTd>
+                <MudTd DataLabel="Manufacturer Name">@GetEnglishValue(product.ManufacturerName)</MudTd>
+                <MudTd DataLabel="Zip Code">@GetEnglishValue(product.AddressInfo.ZipCode)</MudTd>
+                <MudTd DataLabel="City">@GetEnglishValue(product.AddressInfo.City)</MudTd>
+                <MudTd DataLabel="Country">@GetEnglishValue(product.AddressInfo.Country)</MudTd>
             }
-            <MudTd  DataLabel="Designation">@product.ProductInfo.ProductDesignation</MudTd>
-            <MudTd  DataLabel="Root">@product.ProductInfo.ProductRoot</MudTd>
-            <MudTd  DataLabel="Family">@product.ProductInfo.ProductFamily</MudTd>
-            <MudTd  DataLabel="Type">@product.ProductInfo.ProductType</MudTd>
-            <MudTd  DataLabel="Order Code">@product.ProductInfo.OrderCode</MudTd>
-            <MudTd  DataLabel="Article Number">@product.ProductInfo.ArticleNumber</MudTd>
-            <MudTd  DataLabel="Serial Number">@product.SerialNumber</MudTd>
+            <MudTd DataLabel="Designation">@GetEnglishValue(product.ProductInfo.ProductDesignation)</MudTd>
+            <MudTd DataLabel="Root">@GetEnglishValue(product.ProductInfo.ProductRoot)</MudTd>
+            <MudTd DataLabel="Family">@GetEnglishValue(product.ProductInfo.ProductFamily)</MudTd>
+            <MudTd DataLabel="Type">@GetEnglishValue(product.ProductInfo.ProductType)</MudTd>
+            <MudTd DataLabel="Order Code">@GetEnglishValue(product.ProductInfo.OrderCode)</MudTd>
+            <MudTd DataLabel="Article Number">@GetEnglishValue(product.ProductInfo.ArticleNumber)</MudTd>
+            <MudTd DataLabel="Serial Number">@GetEnglishValue(product.SerialNumber)</MudTd>
             <MudButton OnClick="@(() => ViewDocuments(product.Id))" Variant="Variant.Outlined" Style="background-color:#0D47A1; color:white; font-weight:bold;">
                 View Documents
             </MudButton>
@@ -155,6 +154,21 @@ else
 
 
 
+
+
+
+    private string GetEnglishValue(Dictionary<string, string> dict)
+    {
+        if (dict == null) return string.Empty;
+
+        // Try to get English value
+        if (dict.TryGetValue("en", out var englishValue))
+            return englishValue;
+
+        // Fallback: return the first value if English not found
+        return dict.Values.FirstOrDefault() ?? string.Empty;
+    }
+
     private void NavigateToEditPage()
     {
         if (selectedItems.Count != 1)
@@ -192,7 +206,7 @@ else
 
         await LoadProducts(); 
 
-        DeleteSnackBar(); // Show snackbar after deletion
+        DeleteSnackBar(); 
 
         selectedItems.Clear();
     }
@@ -205,7 +219,7 @@ else
     private async Task LoadProducts()
     {
         products = await Mediator.Send(new GetAllProductsQuery());
-        StateHasChanged(); // Optional but helps force UI update
+        StateHasChanged(); 
     }
     private void DeleteSnackBar()
     {
@@ -223,17 +237,52 @@ else
         if (string.IsNullOrWhiteSpace(searchString))
             return true;
 
-        if (product.ManufacturerName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        var searchLower = searchString.ToLower();
+
+        // Check manufacturer name
+        if (GetEnglishValue(product.ManufacturerName).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        if (product.SerialNumber.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        // Check serial number
+        if (GetEnglishValue(product.SerialNumber).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        if (product.ProductInfo.ProductDesignation.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        // Check product designation
+        if (GetEnglishValue(product.ProductInfo.ProductDesignation).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        if (product.ProductInfo.ProductDesignation.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        // Check product root
+        if (GetEnglishValue(product.ProductInfo.ProductRoot).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
             return true;
+
+        // Check product family
+        if (GetEnglishValue(product.ProductInfo.ProductFamily).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // Check product type
+        if (GetEnglishValue(product.ProductInfo.ProductType).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // Check order code
+        if (GetEnglishValue(product.ProductInfo.OrderCode).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // Check article number
+        if (GetEnglishValue(product.ProductInfo.ArticleNumber).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // Check address info if showing manufacturer info
+        if (ShowManufacturerInfo)
+        {
+            if (GetEnglishValue(product.AddressInfo.ZipCode).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (GetEnglishValue(product.AddressInfo.City).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (GetEnglishValue(product.AddressInfo.Country).ToLower().Contains(searchLower, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
 
         return false;
     }

@@ -1,11 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using SMEAdapter.Domain.Entities;
+using SMEAdapter.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-using SMEAdapter.Domain.Entities;   
 
 
 
@@ -54,11 +59,51 @@ namespace SMEAdapter.Infrastructure
             builder.OwnsOne(d => d.Classification, c =>
             {
                 c.Property(x => x.ClassificationSystem).HasMaxLength(100);
-                c.Property(x => x.ClassName).HasMaxLength(100);
+                ConfigureLangStringSet(c.Property(x => x.ClassName))
+                    .HasColumnName("Classification_ClassName")
+                    .HasColumnType("nvarchar(max)");
                 c.Property(x => x.ClassLang).HasMaxLength(50);
                 c.Property(x => x.ClassDescription).HasMaxLength(255);
                 c.Property(x => x.ClassId).HasMaxLength(100);
             });
         }
+
+             private static PropertyBuilder<LangStringSet> ConfigureLangStringSet(PropertyBuilder<LangStringSet> property)
+             {
+
+                    var converter = new ValueConverter<LangStringSet, string>(
+                        v => JsonSerializer.Serialize(v == null ? Array.Empty<LangString>() : v.Items, (JsonSerializerOptions?)null),
+                        v => new LangStringSet(
+                                 JsonSerializer.Deserialize<List<LangString>>(v, (JsonSerializerOptions?)null)
+                                 ?? new List<LangString>())
+                    );
+
+
+                    var comparer = new ValueComparer<LangStringSet>(
+                        (a, b) =>
+                            JsonSerializer.Serialize(a == null ? Array.Empty<LangString>() : a.Items, (JsonSerializerOptions?)null)
+                            ==
+                            JsonSerializer.Serialize(b == null ? Array.Empty<LangString>() : b.Items, (JsonSerializerOptions?)null),
+
+                        v =>
+                            JsonSerializer.Serialize(v == null ? Array.Empty<LangString>() : v.Items, (JsonSerializerOptions?)null)
+                            .GetHashCode(),
+
+                        v =>
+                            new LangStringSet(
+                                JsonSerializer.Deserialize<List<LangString>>(
+                                    JsonSerializer.Serialize(v == null ? Array.Empty<LangString>() : v.Items,
+                                                             (JsonSerializerOptions?)null),
+                                    (JsonSerializerOptions?)null
+                                )
+                                ?? new List<LangString>())
+                    );
+
+                    property.HasConversion(converter);
+                    property.Metadata.SetValueComparer(comparer);
+
+                    return property;
+             }
+             
     }
 }

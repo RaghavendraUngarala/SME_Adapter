@@ -42,7 +42,7 @@
 
         // Also keep it in the service for consistency
         CompanyInfo.CurrentCompany = company;
-        Console.WriteLine("CompanyInfo.CurrentCompany");
+       
         _activeIndex++;
         await InvokeAsync(StateHasChanged);
     }

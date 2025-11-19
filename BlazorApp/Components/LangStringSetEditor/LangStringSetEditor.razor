@@ -1,0 +1,230 @@
+﻿@using System.Globalization
+
+<MudStack Spacing="2">
+    
+
+    @foreach (var row in Rows)
+    {
+        <MudGrid Justify="Justify.Center">
+            <MudItem xs="12" sm="3">
+                <MudSelect T="string"
+                           @bind-Value="row.Language"
+                           Variant="Variant.Outlined"
+                           Required="@Required"
+                           Error="@row.ShowLangError"
+                           ErrorText="@row.LangErrorText"
+                           Placeholder="Select Language"
+                           Disabled="@Disabled"
+                           Dense="true">
+                    @foreach (var opt in LanguageOptionsFilteredFor(row))
+                    {
+                        <MudSelectItem T="string" Value="@opt.Code">
+                            @opt.Display  &nbsp; &nbsp; (@opt.Code)
+                        </MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="7">
+                <MudTextField T="string"
+                              @bind-Value="row.Text"
+                              Variant="Variant.Outlined"
+                              Placeholder="@Placeholder"
+                              Required="@Required"
+                              Disabled="@Disabled"
+                              Margin="Margin.Dense" 
+                              Lines="1"
+                              Immediate="true"
+                              Clearable="true"
+                              OnBlur="(_)=> Commit()"/>
+            </MudItem>
+
+            <MudItem xs="12" sm="1" Class="flex justify-end">
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Variant="Variant.Text"
+                               Disabled="@(Disabled || (Rows.Count <= MinRows))"
+                               OnClick="@(()=>RemoveRow(row))" />
+            </MudItem>
+
+            <MudItem xs="12" sm="1" Class="flex justify-end">
+                <MudIconButton Icon="@Icons.Material.Filled.Add"
+                           Color="Color.Primary"
+                           Variant="Variant.Text"
+                           Disabled="@(Disabled || (MaxRows.HasValue && Rows.Count >= MaxRows))"
+                           OnClick="@AddRow" />
+                   
+            </MudItem>
+        </MudGrid>
+    }
+
+    
+
+    @if (!string.IsNullOrEmpty(HelpText))
+    {
+        <MudText Typo="Typo.caption" Class="opacity-70">@HelpText</MudText>
+    }
+</MudStack>
+
+@code {
+    
+    [Parameter] public Dictionary<string,string>? Value { get; set; }
+    [Parameter] public EventCallback<Dictionary<string,string>?> ValueChanged { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string InputLabel { get; set; } = "Text";
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? HelpText { get; set; }
+
+    [Parameter] public bool Required { get; set; } = false;
+    [Parameter] public bool Disabled { get; set; } = false;
+
+    [Parameter] public int MinRows { get; set; } = 0;
+    [Parameter] public int? MaxRows { get; set; }
+
+    [Parameter] public IEnumerable<string>? AllowedLanguageCodes { get; set; }
+    [Parameter] public bool UseNativeLanguageNames { get; set; } = true;
+
+    private List<Row> Rows = new();
+
+    private record LangOpt(string Code, string Display);
+
+    private bool _initialized;
+
+    private class Row
+    {
+        public Guid Id { get; } = Guid.NewGuid();
+        public string? Language { get; set; }
+        public string? Text { get; set; }
+        public bool ShowLangError { get; set; }
+        public string LangErrorText { get; set; } = "Choose a language";
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_initialized)
+            return;
+        var dict = Value ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        Rows = dict
+            .Select(kv => new Row { Language = kv.Key, Text = kv.Value })
+            .ToList();
+
+        while (Rows.Count < MinRows)
+            Rows.Add(new Row { Language = SuggestNextLanguage(), Text = string.Empty });
+
+        if (Rows.Count == 0)
+            Rows.Add(new Row { Language = SuggestNextLanguage(), Text = string.Empty });
+        _initialized = true;
+    }
+
+    private void AddRow()
+    {
+        if (MaxRows.HasValue && Rows.Count >= MaxRows.Value)
+            return;
+
+        var suggested = SuggestNextLanguage();   // en → de → null
+
+        Rows.Add(new Row
+        {
+            Language = suggested,
+            Text = string.Empty
+        });
+        
+    }
+
+    private void RemoveRow(Row row)
+    {
+        if (Rows.Count <= MinRows) return;
+        Rows.Remove(row);
+        Commit();
+    }
+
+    private void Commit()
+    {
+        var langs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var r in Rows)
+        {
+            r.ShowLangError = false;
+
+            if (string.IsNullOrWhiteSpace(r.Language))
+            {
+                if (Required || !string.IsNullOrWhiteSpace(r.Text))
+                    r.ShowLangError = true;
+            }
+            else
+            {
+                if (!langs.Add(r.Language))
+                {
+                    r.ShowLangError = true;
+                    r.LangErrorText = "Duplicate language";
+                }
+            }
+        }
+
+        var dict = Rows
+           .Where(r => !string.IsNullOrWhiteSpace(r.Language))
+           .ToDictionary(
+               r => r.Language!,
+               r => r.Text ?? string.Empty,
+               StringComparer.OrdinalIgnoreCase);
+
+        ValueChanged.InvokeAsync(dict);
+        StateHasChanged();
+    }
+
+    private IEnumerable<LangOpt> AllLanguageOptions()
+    {
+        IEnumerable<string> codes = AllowedLanguageCodes ?? CultureInfo
+            .GetCultures(CultureTypes.NeutralCultures)
+            .Select(c => c.TwoLetterISOLanguageName)
+            .Where(code => code.Length == 2)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(x => x);
+
+        foreach (var code in codes)
+        {
+            var culture = CultureInfo
+                .GetCultures(CultureTypes.NeutralCultures)
+                .FirstOrDefault(c => string.Equals(c.TwoLetterISOLanguageName, code, StringComparison.OrdinalIgnoreCase));
+
+            var display = culture == null
+                ? code
+                : (UseNativeLanguageNames ? culture.NativeName : culture.EnglishName);
+
+            yield return new LangOpt(code, display);
+        }
+    }
+
+    private IEnumerable<LangOpt> LanguageOptionsFilteredFor(Row currentRow)
+    {
+        var used = Rows
+            .Where(r => r != currentRow && !string.IsNullOrWhiteSpace(r.Language))
+            .Select(r => r.Language!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var opt in AllLanguageOptions())
+            if (!used.Contains(opt.Code) ||
+                string.Equals(currentRow.Language, opt.Code, StringComparison.OrdinalIgnoreCase))
+                yield return opt;
+    }
+
+    private string SuggestNextLanguage()
+    {
+        var used = Rows
+            .Select(r => r.Language)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (!used.Contains("en"))
+            return "en";
+
+        // Second suggestion: de
+        if (!used.Contains("de"))
+            return "de";
+
+        // From third row onward: no suggestion
+        return null;
+    }
+}

@@ -7,39 +7,34 @@ using System.Threading.Tasks;
 
 namespace SMEAdapter.Application.DTOs
 {
-     public class ProductDto
-     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+    public sealed class ProductDto
+    {
+        public Guid Id { get; set; }
+        public Dictionary<string, string> ManufacturerName { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> SerialNumber { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
-        [Required(ErrorMessage = "Manufacturer Name is required")]
-        public string ManufacturerName { get; set; } = string.Empty;
-        public AddressInfo AddressInfo { get; set; } = new AddressInfo();
-        public ProductInfo ProductInfo { get; set; } = new ProductInfo();
-        public string SerialNumber { get; set; } = string.Empty;
-      
+        public ProductInfoDto ProductInfo { get; set; } = new();
+        public AddressInfoDto AddressInfo { get; set; } = new();
 
         public string? ImageUrl { get; set; }
-        public ICollection<ProductDocumentDto>? Documents { get; set; }
-
     }
 
-    public class AddressInfo
+    public sealed class ProductInfoDto
     {
-
-        public string ZipCode { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
-
+        public Dictionary<string, string> ProductDesignation { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> ProductRoot { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> ProductFamily { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> ProductType { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> OrderCode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> ArticleNumber { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
-    public class ProductInfo
+    public sealed class AddressInfoDto
     {
-        public string ProductDesignation { get; set; }
-        public string ProductRoot { get; set; }
-        public string ProductFamily { get; set; }
-        public string ProductType { get; set; }
-        public string OrderCode { get; set; }
-        public string ArticleNumber { get; set; }
+        public Dictionary<string, string> Street { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> ZipCode { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> City { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, string> Country{ get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
 }

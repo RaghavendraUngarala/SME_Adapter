@@ -2,6 +2,7 @@
 using SMEAdapter.Application.DTOs;
 using SMEAdapter.Domain.Entities;
 using SMEAdapter.Domain.Interfaces;
+using SMEAdapter.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,8 @@ using System.Threading.Tasks;
 
 namespace SMEAdapter.Application.ProductDocuments.AddProductDocuments
 {
-    public class CreateProductDocumentHandler : IRequestHandler<CreateProductDocumentCommand, Guid>
+    public class CreateProductDocumentHandler
+         : IRequestHandler<CreateProductDocumentCommand, Guid>
     {
         private readonly IProductDocumentRepository _repository;
 
@@ -24,43 +26,44 @@ namespace SMEAdapter.Application.ProductDocuments.AddProductDocuments
         {
             var dto = request.ProductDocument;
 
-            var document = new ProductDocument
-            {
-                ProductId = dto.ProductId,
-                FileName = dto.FileName,
-                ContentType = dto.ContentType,
-                Data = dto.Data ?? Array.Empty<byte>(),
+        
+            var document = new ProductDocument(
+                dto.FileName,
+                dto.ContentType,
+                dto.Data ?? Array.Empty<byte>()
+            );
 
-                Version = new DocumentVersion
-                {
-                    Language = dto.Language,
-                    Version = dto.Version,
-                    Title = dto.Title,
-                    Summary = dto.Summary,
-                    Keywords = dto.Keywords,
-                    State = dto.State,
-                    StateDate = dto.StateDate,
-                    OrganisationName = dto.OrganisationName,
-                    OrganisationOfficialName = dto.OrganisationOfficialName
-                },
-
-                Identifier = new DocumentIdentifier
-                {
-                    ValueId = dto.ValueId,
-                    DomainId = dto.DomainId
-                },
-
-                Classification = new DocumentClassification
-                {
-                    ClassificationSystem = dto.ClassificationSystem,
-                    ClassName = dto.ClassName,
-                    ClassLang = dto.ClassLang,
-                    ClassDescription = dto.ClassDescription,
-                    ClassId = dto.ClassId
-                }
-
-            };
             
+            document.SetProduct(dto.ProductId);
+
+          
+            document.UpdateVersion(
+                dto.Language,
+                dto.Version,
+                dto.Title,
+                dto.Summary,
+                dto.Keywords,
+                dto.State,
+                dto.StateDate,
+                dto.OrganisationName,
+                dto.OrganisationOfficialName
+            );
+
+            
+            document.UpdateIdentifier(dto.ValueId, dto.DomainId);
+
+           
+            var classNameSet = LangStringSet.FromDictionary(dto.ClassName);
+
+            document.UpdateClassification(
+                dto.ClassificationSystem,
+                classNameSet,
+                dto.ClassLang,
+                dto.ClassDescription,
+                dto.ClassId
+            );
+
+            // STEP 6: Save
             await _repository.AddAsync(document, cancellationToken);
 
             return document.Id;

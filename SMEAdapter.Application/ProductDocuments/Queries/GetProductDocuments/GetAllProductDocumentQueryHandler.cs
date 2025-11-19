@@ -47,7 +47,7 @@ namespace SMEAdapter.Application.ProductDocuments.Queries.GetProductDocuments
 
                 // Classification
                 ClassificationSystem = d.Classification?.ClassificationSystem,
-                ClassName = d.Classification?.ClassName,
+                ClassName = d.Classification?.ClassName?.ToDictionary(),
                 ClassLang = d.Classification?.ClassLang,
                 ClassDescription = d.Classification?.ClassDescription,
                 ClassId = d.Classification?.ClassId

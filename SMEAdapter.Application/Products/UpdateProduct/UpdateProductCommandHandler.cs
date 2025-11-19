@@ -1,11 +1,12 @@
 ﻿using MediatR;
+using SMEAdapter.Domain.Entities;
 using SMEAdapter.Domain.Interfaces;
+using SMEAdapter.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SMEAdapter.Domain.Entities;
 
 namespace SMEAdapter.Application.Products.UpdateProduct
 {
@@ -22,33 +23,31 @@ namespace SMEAdapter.Application.Products.UpdateProduct
         {
             var dto = request.Product;
 
-            var existingProduct = await _productRepository.GetByIdAsync(dto.Id, cancellationToken);
-            if (existingProduct == null)
-                throw new Exception("Product not found.");
+            var existing = await _productRepository.GetByIdAsync(dto.Id, cancellationToken)
+                           ?? throw new Exception("Product not found.");
 
-            // Update fields
-            existingProduct.ManufacturerName = dto.ManufacturerName;
-            existingProduct.SerialNumber = dto.SerialNumber;
-            existingProduct.ImageUrl = dto.ImageUrl;
-            existingProduct.AddressInfo = new AddressInfo
-            {
-                ZipCode = request.Product.AddressInfo.ZipCode,
-                City = request.Product.AddressInfo.City,
-                Country = request.Product.AddressInfo.Country
-            };
+            // Replace aggregates / value objects (read-only props)
+            existing.ReplaceManufacturerName(LangStringSet.FromDictionary(dto.ManufacturerName));
+            existing.ReplaceSerialNumber(LangStringSet.FromDictionary(dto.SerialNumber));
+            existing.SetImageUrl(dto.ImageUrl);
 
-            existingProduct.ProductInfo = new ProductInfo
-            {
-                ProductDesignation = request.Product.ProductInfo.ProductDesignation,
-                ProductRoot = request.Product.ProductInfo.ProductRoot,
-                ProductFamily = request.Product.ProductInfo.ProductFamily,
-                ProductType = request.Product.ProductInfo.ProductType,
-                OrderCode = request.Product.ProductInfo.OrderCode,
-                ArticleNumber = request.Product.ProductInfo.ArticleNumber
-            };
+            existing.ReplaceProductInfo(new ProductInfo(
+                LangStringSet.FromDictionary(dto.ProductInfo.ProductDesignation),
+                LangStringSet.FromDictionary(dto.ProductInfo.ProductRoot),
+                LangStringSet.FromDictionary(dto.ProductInfo.ProductFamily),
+                LangStringSet.FromDictionary(dto.ProductInfo.ProductType),
+                LangStringSet.FromDictionary(dto.ProductInfo.OrderCode),
+                LangStringSet.FromDictionary(dto.ProductInfo.ArticleNumber)
+            ));
 
-            await _productRepository.UpdateAsync(existingProduct, cancellationToken);
+            existing.ReplaceAddress(new AddressInfo(
+                LangStringSet.FromDictionary(dto.AddressInfo.Street),
+                LangStringSet.FromDictionary(dto.AddressInfo.ZipCode),
+                LangStringSet.FromDictionary(dto.AddressInfo.City),
+                LangStringSet.FromDictionary(dto.AddressInfo.Country)
+            ));
 
+            await _productRepository.UpdateAsync(existing, cancellationToken);
             return Unit.Value;
         }
     }

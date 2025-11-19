@@ -2,6 +2,7 @@
 using SMEAdapter.Domain;
 using SMEAdapter.Domain.Entities;
 using SMEAdapter.Domain.Interfaces;
+using SMEAdapter.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,32 +24,27 @@ namespace SMEAdapter.Application.Products.CreateProduct
         {
             var dto = request.Product;
 
-          
-            var product = new Product
-            {
-                ManufacturerName = dto.ManufacturerName,
-                SerialNumber = dto.SerialNumber,
-                ImageUrl = dto.ImageUrl,
-                AddressInfo = new AddressInfo
-                {
-                    ZipCode = dto.AddressInfo.ZipCode,
-                    City = dto.AddressInfo.City,
-                    Country = dto.AddressInfo.Country
-                },
-                ProductInfo = new ProductInfo
-                {
-                    ProductDesignation = dto.ProductInfo.ProductDesignation,
-                    ProductRoot = dto.ProductInfo.ProductRoot,
-                    ProductFamily = dto.ProductInfo.ProductFamily,
-                    ProductType = dto.ProductInfo.ProductType,
-                    OrderCode = dto.ProductInfo.OrderCode,
-                    ArticleNumber = dto.ProductInfo.ArticleNumber
-
-                }
-            };
+            var product = new Product(
+                manufacturerName: LangStringSet.FromDictionary(dto.ManufacturerName),
+                productInfo: new ProductInfo(
+                    LangStringSet.FromDictionary(dto.ProductInfo.ProductDesignation),
+                    LangStringSet.FromDictionary(dto.ProductInfo.ProductRoot),
+                    LangStringSet.FromDictionary(dto.ProductInfo.ProductFamily),
+                    LangStringSet.FromDictionary(dto.ProductInfo.ProductType),
+                    LangStringSet.FromDictionary(dto.ProductInfo.OrderCode),
+                    LangStringSet.FromDictionary(dto.ProductInfo.ArticleNumber)
+                ),
+                addressInfo: new AddressInfo(
+                    LangStringSet.FromDictionary(dto.AddressInfo.Street),
+                    LangStringSet.FromDictionary(dto.AddressInfo.ZipCode),
+                    LangStringSet.FromDictionary(dto.AddressInfo.City),
+                    LangStringSet.FromDictionary(dto.AddressInfo.Country)
+                ),
+                serialNumber: LangStringSet.FromDictionary(dto.SerialNumber),
+                imageUrl: dto.ImageUrl
+            );
 
             await _productRepository.AddAsync(product, cancellationToken);
-
             return product.Id;
         }
     }

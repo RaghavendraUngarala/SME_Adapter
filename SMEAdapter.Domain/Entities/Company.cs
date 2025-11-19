@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SMEAdapter.Domain.ValueObjects;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -11,18 +12,32 @@ namespace SMEAdapter.Domain.Entities
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         [Required(ErrorMessage = "Manufacturer Name is required")]
-        public string? CompanyManufacturerName { get; set; }
-        public CompanyAddressInfo? CompanyAddressInfo { get; set; } = new CompanyAddressInfo();
-        public string? CompanyImageUrl { get; set; }
+        public LangStringSet CompanyManufacturerName { get; private set; } = new(null);
+
+        // stays nested
+        public CompanyAddressInfo CompanyAddressInfo { get; private set; } = new();
+        public string? CompanyImageUrl { get; private set; }
+
+        private Company() { }
+        public Company(LangStringSet name, CompanyAddressInfo address, string? imageUrl)
+        {
+            CompanyManufacturerName = name;
+            CompanyAddressInfo = address;
+            CompanyImageUrl = imageUrl;
+        }
 
 
     }
     public class CompanyAddressInfo
     {
+        public LangStringSet ZipCode { get; private set; } = new(null);
+        public LangStringSet City { get; private set; } = new(null);
+        public LangStringSet Country { get; private set; } = new(null);
 
-        public string ZipCode { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
-
+        public CompanyAddressInfo() { }
+        public CompanyAddressInfo(LangStringSet zip, LangStringSet city, LangStringSet country)
+        {
+            ZipCode = zip; City = city; Country = country;
+        }
     }
 }

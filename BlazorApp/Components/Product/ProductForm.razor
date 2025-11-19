@@ -12,19 +12,22 @@
 @using SMEAdapter.Application.Products.Queries.GetProducts
 @using SMEAdapter.Application.Products.Queries.GetProductById
 @using SMEAdapter.Application.Products.UpdateProduct
+@using BlazorApp.Components.LangStringSetEditor  
+
+
 
 @if (product != null)
 {
-<MudGrid>
-    <MudItem xs="12" sm="12" md="12">
-        <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
-                <EditForm Model="@product" OnValidSubmit="HandleValidSubmit" >
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="12">
+            <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
+                <EditForm Model="@product" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
 
-                 <MudExpansionPanels>
+                    <MudExpansionPanels>
 
-                     <MudExpansionPanel  Expanded="false" TextColor="Color.Primary" HeaderClass="mud-expand-panel-header">
-                        <!-- Manufacturer Info -->
+                        <!-- ========== Manufacturer Info ========== -->
+                        <MudExpansionPanel Expanded="false" TextColor="Color.Primary" HeaderClass="mud-expand-panel-header">
                             <TitleContent>
                                 <MudStack Row="true" AlignItems="AlignItems.Baseline">
                                     <MudText Typo="Typo.h4" Class="header-text">Manufacturer Info</MudText>
@@ -37,48 +40,53 @@
                                                    title="Help: Company Name" />
                                 </MudStack>
                             </TitleContent>
+
                             <ChildContent>
                                 <MudText Typo="Typo.h5" Class="font-semibold">Manufacturer Name</MudText>
-                                <MudTextField T="string" Variant="Variant.Outlined" HelperTextOnFocus="true" HelperText="Full legal name of the product manufacturer" 
-                                                    @bind-Value="product.ManufacturerName"
-                                                    For="@(() => product.ManufacturerName)"
-                                                    Class="custom-font" Placeholder="MusterGmbh" />
 
-                                <!-- Address Info -->
-                               
-                                <MudText Typo="Typo.h5" Class="font-semibold">Address Info</MudText>
-                             
-                                
+                                <LangStringSetEditor Value="product.ManufacturerName"
+                                                 ValueChanged="OnManufacturerNameChanged"
+                                                 Label="Manufacturer Name"
+                                                 InputLabel="Name"
+                                                 MinRows="1"
+                                                 HelpText="Full legal name of the product manufacturer" />
+
                                 <MudDivider Class="my-2"></MudDivider>
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">ZipCode</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="ZIP or postal code for the manufacturer’s address" Variant="Variant.Outlined" 
-                                                  @bind-Value="product.AddressInfo.ZipCode"
-                                                  For="@(() => product.AddressInfo.ZipCode)"
-                                              Class="custom-font" Placeholder="1234" />
+                                <MudText Typo="Typo.h5" Class="font-semibold">Address Info</MudText>
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">City</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="City where the manufacturer is based" Variant="Variant.Outlined" 
-                                                  @bind-Value="product.AddressInfo.City"
-                                                  For="@(() => product.AddressInfo.City)"
-                                              Class="custom-font" Placeholder="Musterstadt" />
+                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Zip Code</MudText>
+                                <LangStringSetEditor Value="product.AddressInfo.ZipCode"
+                                                 ValueChanged="OnZipCodeChanged"
+                                                 Label="Zip Code"
+                                                 InputLabel="ZIP"
+                                                 MinRows="1"
+                                                 HelpText="ZIP or postal code for the manufacturer’s address" />
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">Country</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="Country where the manufacturer is based" Variant="Variant.Outlined" 
-                                                  @bind-Value="product.AddressInfo.Country"
-                                                  For="@(() => product.AddressInfo.Country)"
-                                              Class="custom-font" Placeholder="Muster-Bundesland" />
+                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">City</MudText>
+                                <LangStringSetEditor Value="product.AddressInfo.City"
+                                                 ValueChanged="OnCityChanged"
+                                                 Label="City"
+                                                 InputLabel="City"
+                                                 MinRows="1"
+                                                 HelpText="City where the manufacturer is based" />
+
+                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Country</MudText>
+                                <LangStringSetEditor Value="product.AddressInfo.Country"
+                                                 ValueChanged="OnCountryChanged"
+                                                 Label="Country"
+                                                 InputLabel="Country"
+                                                 MinRows="1"
+                                                 HelpText="Country where the manufacturer is based" />
                             </ChildContent>
-                    </MudExpansionPanel>
+                        </MudExpansionPanel>
 
-                    <MudDivider Class="my-4" />
+                        <MudDivider Class="my-4" />
 
-                     
-                    <!-- Product Info -->
-                     <MudExpansionPanel  Expanded="true" TextColor="Color.Primary" HeaderClass="mud-expand-panel-header">
-                        <!-- Manufacturer Info -->
+                        <!-- ========== Product Info ========== -->
+                        <MudExpansionPanel Expanded="true" TextColor="Color.Primary" HeaderClass="mud-expand-panel-header">
                             <TitleContent>
-                                 <MudStack Row="true" AlignItems="AlignItems.Baseline">
+                                <MudStack Row="true" AlignItems="AlignItems.Baseline">
                                     <MudText Typo="Typo.h4" Class="header-text">Product Info</MudText>
                                     <MudIconButton Icon="@Icons.Material.Filled.HelpOutline"
                                                    Color="Color.Primary"
@@ -86,161 +94,245 @@
                                                    Target="_blank"
                                                    Href="https://github.com/Ra-one77/SME_Adapter/wiki/Product-Info"
                                                    Style="margin-top: 10px;"
-                                                   title="Help: Company Name" />
-                                 </MudStack>
+                                                   title="Help: Product Info" />
+                                </MudStack>
                             </TitleContent>
-                     <ChildContent>
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">ProductFamily</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="Group of related products that share similar features" Variant="Variant.Outlined" Placeholder="Type ABC"
-                                    @bind-Value="product.ProductInfo.ProductFamily"
-                                    For="@(() => product.ProductInfo.ProductFamily)"
-                                    Class="custom-font" />
+                            <ChildContent>
+                                <MudText Typo="Typo.h6" Class="font-semibold">Product Family</MudText>
+                                <LangStringSetEditor Value="product.ProductInfo.ProductFamily"
+                                                 ValueChanged="OnProductFamilyChanged"
+                                                 Label="Product Family"
+                                                 InputLabel="Family"
+                                                 MinRows="1"
+                                                 HelpText="Group of related products that share similar features" />
 
+                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Product Root</MudText>
+                                <LangStringSetEditor Value="product.ProductInfo.ProductRoot"
+                                                 ValueChanged="OnProductRootChanged"
+                                                 Label="Product Root"
+                                                 InputLabel="Root"
+                                                 MinRows="1"
+                                                 HelpText="Base model from which product variants are derived" />
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">ProductRoot</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="Base model from which product variants are derived" Variant="Variant.Outlined" Placeholder=""
-                                    @bind-Value="product.ProductInfo.ProductRoot"
-                                    For="@(() => product.ProductInfo.ProductRoot)"
-                                    Class="custom-font" />
+                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Product Type</MudText>
+                                <LangStringSetEditor Value="product.ProductInfo.ProductType"
+                                                 ValueChanged="OnProductTypeChanged"
+                                                 Label="Product Type"
+                                                 InputLabel="Type"
+                                                 MinRows="1"
+                                                 HelpText="General category the product belongs to" />
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">ProductType</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="General category the product belongs to" Variant="Variant.Outlined" Placeholder="FM-ABC-1234"
-                                    @bind-Value="product.ProductInfo.ProductType"
-                                    For="@(() => product.ProductInfo.ProductType)"
-                                    Class="custom-font" />
+                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Product Designation</MudText>
+                                <LangStringSetEditor Value="product.ProductInfo.ProductDesignation"
+                                                 ValueChanged="OnProductDesignationChanged"
+                                                 Label="Product Designation"
+                                                 InputLabel="Designation"
+                                                 MinRows="1"
+                                                 HelpText="Official name used to market or identify this product" />
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">ProductDesignation</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="Official name used to market or identify this product" Variant="Variant.Outlined" Placeholder="ABC-123"
-                                  @bind-Value="product.ProductInfo.ProductDesignation"
-                                  For="@(() => product.ProductInfo.ProductDesignation)"
-                                  Class="custom-font" />
+                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Serial Number</MudText>
+                                <LangStringSetEditor Value="product.SerialNumber"
+                                                 ValueChanged="OnSerialNumberChanged"
+                                                 Label="Serial Number"
+                                                 InputLabel="Serial"
+                                                 MinRows="1"
+                                                 HelpText="Internal code used for stock and inventory tracking" />
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">SerialNumber</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="Internal code used for stock and inventory tracking" Variant="Variant.Outlined" Placeholder="12345678"
-                                  @bind-Value="product.SerialNumber"
-                                  For="@(() => product.SerialNumber)"
-                                  Class="custom-font" />
+                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Order Code</MudText>
+                                <LangStringSetEditor Value="product.ProductInfo.OrderCode"
+                                                 ValueChanged="OnOrderCodeChanged"
+                                                 Label="Order Code"
+                                                 InputLabel="Order Code"
+                                                 MinRows="1"
+                                                 HelpText="Code customers use to order this exact configuration" />
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">OrderCode</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="Code customers use to order this exact configuration" Variant="Variant.Outlined" Placeholder="FMBABC12345"
-                                    @bind-Value="product.ProductInfo.OrderCode"
-                                    For="@(() => product.ProductInfo.OrderCode)"
-                                    Class="custom-font" />
+                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Article Number</MudText>
+                                <LangStringSetEditor Value="product.ProductInfo.ArticleNumber"
+                                                 ValueChanged="OnArticleNumberChanged"
+                                                 Label="Article Number"
+                                                 InputLabel="Article Number"
+                                                 MinRows="1"
+                                                 HelpText="Unique identifier for each individual unit. Used for warranty and traceability" />
 
-                                <MudText Typo="Typo.h6" Class="font-semibold">ArticleNumber</MudText>
-                                <MudTextField T="string" HelperTextOnFocus="true" HelperText="Unique identifier for each individual unit. Used for warranty and traceability" Variant="Variant.Outlined" Placeholder=""
-                                  @bind-Value="product.ProductInfo.ArticleNumber"
-                                  For="@(() => product.ProductInfo.ArticleNumber)"
-                                  Class="custom-font" />
-
-
+                                <!-- Product Image -->
                                 <MudText Typo="Typo.h6" Class="mt-4">Product Image</MudText>
 
-                                    <MudFileUpload T="IBrowserFile"
-                                                   MaximumFileCount="1"
-                                                   Accept="image/*"
-                                                   FilesChanged="OnFilesChanged">
-                                            <ActivatorContent>
-                                                <MudButton Variant="Variant.Filled"
-                                                           Color="Color.Secondary"
-                                                           StartIcon="@Icons.Material.Filled.CloudUpload">
-                                                    @(IsEditMode ? "Replace Image" : "Upload Image")
-                                                </MudButton>
-                                            </ActivatorContent>
+                                <MudFileUpload T="IBrowserFile"
+                                               MaximumFileCount="1"
+                                               Accept="image/*"
+                                               FilesChanged="OnFilesChanged">
+                                    <ActivatorContent>
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Secondary"
+                                                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                                            @(IsEditMode ? "Replace Image" : "Upload Image")
+                                        </MudButton>
+                                    </ActivatorContent>
 
                                     <SelectedTemplate Context="selectedFile">
-                                                @if (selectedFile != null)
-                                                {
-                                                    <MudText>@selectedFile.Name</MudText>
-                                                }
-                                                else if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
-                                                {
-                                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                                        <MudAvatar Size="Size.Medium" Image="@product.ImageUrl" />
-                                                        <MudText>@($"Current: {Path.GetFileName(product.ImageUrl)}")</MudText>
-                                                    </MudStack>
-                                                }
-                                                else
-                                                {
-                                                    <MudText>No image selected</MudText>
-                                                }
-                                            </SelectedTemplate>
-                                    </MudFileUpload>
+                                        @if (selectedFile != null)
+                                        {
+                                            <MudText>@selectedFile.Name</MudText>
+                                        }
+                                        else if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
+                                        {
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                <MudAvatar Size="Size.Medium" Image="@product.ImageUrl" />
+                                                <MudText>@($"Current: {Path.GetFileName(product.ImageUrl)}")</MudText>
+                                            </MudStack>
+                                        }
+                                        else
+                                        {
+                                            <MudText>No image selected</MudText>
+                                        }
+                                    </SelectedTemplate>
+                                </MudFileUpload>
 
-                                    @if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
-                                    {
-                                        <MudImage Src="@product.ImageUrl"
-                                            Alt="Product Image"
-                                            Width="150"
-                                            Height="150"
-                                            Style="border-radius: 8px; object-fit: cover; margin-top: 10px;" />
-                                    }
+                                @if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
+                                {
+                                    <MudImage Src="@product.ImageUrl"
+                                              Alt="Product Image"
+                                              Width="150"
+                                              Height="150"
+                                              Style="border-radius: 8px; object-fit: cover; margin-top: 10px;" />
+                                }
                             </ChildContent>
-                </MudExpansionPanel>
-                </MudExpansionPanels>
+                        </MudExpansionPanel>
+
+                    </MudExpansionPanels>
+
                     <MudDivider Class="my-4" />
 
-                    <!-- Action Buttons -->
+                    <!-- ========== Action Buttons ========== -->
                     <MudStack Row="true" Spacing="2" Class="mt-4">
-                        <MudButton  Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Color="Color.Primary"
-                                   Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                        <MudButton Variant="Variant.Outlined"
+                                   ButtonType="ButtonType.Submit"
+                                   Color="Color.Primary"
+                                   Size="Size.Large"
+                                   Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
                             @(IsEditMode ? "Update" : "Save")
                         </MudButton>
 
-                        <MudButton Href="/viewproducts" Variant="Variant.Outlined" Color="Color.Secondary"
-                                   Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                        <MudButton Href="/viewproducts"
+                                   Variant="Variant.Outlined"
+                                   Color="Color.Secondary"
+                                   Size="Size.Large"
+                                   Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
                             Back
                         </MudButton>
                     </MudStack>
                 </EditForm>
             </MudPaper>
-</MudItem>
-</MudGrid>
-   
+        </MudItem>
+    </MudGrid>
 }
 else
 {
-<MudGrid>
-<MudItem xs="12" sm="12" md="6">
-    <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
-               <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 50px;">
-                <MudText Typo="Typo.h4" Align="Align.Center">No Company details found. Please enter company details</MudText>
-                <MudButton Href="/companyform" Variant="Variant.Outlined" Color="Color.Secondary"
-                           Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
-                    Add Company detials
-                </MudButton>
-
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="6">
+            <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-top: 50px;">
+                    <MudText Typo="Typo.h4" Align="Align.Center">No Company details found. Please enter company details</MudText>
+                    <MudButton Href="/companyform"
+                               Variant="Variant.Outlined"
+                               Color="Color.Secondary"
+                               Size="Size.Large"
+                               Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                        Add Company details
+                    </MudButton>
                 </div>
-        </MudPaper>
-    </MudItem>
-</MudGrid>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
 }
 
-<br/>
+<br />
 
 @code {
-
     [Parameter] public bool IsFirstProduct { get; set; }
-
     [Parameter] public bool IsEditMode { get; set; } = false;
-
     [Parameter] public Guid ProductId { get; set; }
 
     private ProductDto? product;
+    private string productImageUrl = string.Empty;
+    private IBrowserFile? selectedFile;
 
-    private string productImageUrl;
-
-
-    private IBrowserFile? _selectedFile;
-
-    private async Task OnFilesChanged(IBrowserFile files)
+    // ---------- LangStringSetEditor handlers ----------
+    private void OnManufacturerNameChanged(Dictionary<string, string>? v)
     {
-        _selectedFile = files;
-        if (_selectedFile == null)
+        if (product == null) return;
+        product.ManufacturerName = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnZipCodeChanged(Dictionary<string, string>? v)
+    {
+        if (product?.AddressInfo == null) return;
+        product.AddressInfo.ZipCode = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnCityChanged(Dictionary<string, string>? v)
+    {
+        if (product?.AddressInfo == null) return;
+        product.AddressInfo.City = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnCountryChanged(Dictionary<string, string>? v)
+    {
+        if (product?.AddressInfo == null) return;
+        product.AddressInfo.Country = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnProductFamilyChanged(Dictionary<string, string>? v)
+    {
+        if (product?.ProductInfo == null) return;
+        product.ProductInfo.ProductFamily = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnProductRootChanged(Dictionary<string, string>? v)
+    {
+        if (product?.ProductInfo == null) return;
+        product.ProductInfo.ProductRoot = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnProductTypeChanged(Dictionary<string, string>? v)
+    {
+        if (product?.ProductInfo == null) return;
+        product.ProductInfo.ProductType = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnProductDesignationChanged(Dictionary<string, string>? v)
+    {
+        if (product?.ProductInfo == null) return;
+        product.ProductInfo.ProductDesignation = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnSerialNumberChanged(Dictionary<string, string>? v)
+    {
+        if (product == null) return;
+        product.SerialNumber = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnOrderCodeChanged(Dictionary<string, string>? v)
+    {
+        if (product?.ProductInfo == null) return;
+        product.ProductInfo.OrderCode = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnArticleNumberChanged(Dictionary<string, string>? v)
+    {
+        if (product?.ProductInfo == null) return;
+        product.ProductInfo.ArticleNumber = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    // ---------- File Upload ----------
+    private async Task OnFilesChanged(IBrowserFile file)
+    {
+        selectedFile = file;
+        if (selectedFile == null)
             return;
 
-        await SaveImageFile(_selectedFile);
+        await SaveImageFile(selectedFile);
         StateHasChanged();
     }
 
@@ -253,15 +345,24 @@ else
         await using var fs = new FileStream(uploadPath, FileMode.Create);
         await file.OpenReadStream(maxSize).CopyToAsync(fs);
 
-        product.ImageUrl = $"/images/{fileName}";
-        Console.WriteLine($"{product.ImageUrl}");
+        if (product != null)
+        {
+            product.ImageUrl = $"/images/{fileName}";
+            productImageUrl = product.ImageUrl;
+        }
     }
 
     private async Task HandleValidSubmit()
     {
-        if (IsEditMode && _selectedFile == null)
+        if (product == null)
+            return;
+
+        if (IsEditMode && selectedFile == null)
+        {
+            // keep existing image if no new file selected
             product.ImageUrl = productImageUrl;
-        Console.WriteLine($"Loaded product image URL: {productImageUrl}");
+        }
+
         if (IsEditMode)
         {
             await Mediator.Send(new UpdateProductCommand(product));
@@ -279,43 +380,88 @@ else
             navigate.NavigateTo("/viewproducts");
     }
 
+    // ---------- Init ----------
     protected override async Task OnInitializedAsync()
     {
-
         if (IsEditMode)
         {
             product = await Mediator.Send(new GetProductByIdQuery(ProductId));
-            productImageUrl = product.ImageUrl ?? string.Empty;
+            productImageUrl = product?.ImageUrl ?? string.Empty;
+
+            
+            EnsureDictionariesInitialized(product);
         }
         else
         {
-            // 🔹 Prepare new product template (like before)
             var existingCompany = CompanyInfo.CurrentCompany?.CompanyManufacturerName;
             var existingAddress = CompanyInfo.CurrentCompany?.CompanyAddressInfo;
 
+            var manufacturerDict = existingCompany is not null
+                    ? new Dictionary<string, string>(existingCompany, StringComparer.OrdinalIgnoreCase)
+                    : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // Address: copy each dictionary if present, else start empty
+            var addressDto = new AddressInfoDto
+            {
+                ZipCode = (existingAddress?.ZipCode is not null)
+                    ? new Dictionary<string, string>(existingAddress.ZipCode, StringComparer.OrdinalIgnoreCase)
+                    : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+
+                City = (existingAddress?.City is not null)
+                    ? new Dictionary<string, string>(existingAddress.City, StringComparer.OrdinalIgnoreCase)
+                    : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+
+                Country = (existingAddress?.Country is not null)
+                    ? new Dictionary<string, string>(existingAddress.Country, StringComparer.OrdinalIgnoreCase)
+                    : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            };
+
             product = new ProductDto
             {
-                ManufacturerName = existingCompany,
-                AddressInfo = existingAddress != null
-                    ? new AddressInfo
-                    {
-                        City = existingAddress.City,
-                        ZipCode = existingAddress.ZipCode,
-                        Country = existingAddress.Country
-                    }
-                    : new AddressInfo(),
-                ProductInfo = new ProductInfo(),
+                ManufacturerName = manufacturerDict,
+                AddressInfo      = addressDto,
+                ProductInfo      = new ProductInfoDto(),
+                SerialNumber     = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             };
+
+            EnsureDictionariesInitialized(product);
         }
     }
 
+    private static void EnsureDictionariesInitialized(ProductDto p)
+    {
+        p.ManufacturerName ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        p.SerialNumber     ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        p.AddressInfo ??= new AddressInfoDto();
+        p.AddressInfo.ZipCode ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        p.AddressInfo.City    ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        p.AddressInfo.Country ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        p.ProductInfo ??= new ProductInfoDto();
+        p.ProductInfo.ProductFamily      ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        p.ProductInfo.ProductRoot        ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        p.ProductInfo.ProductType        ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        p.ProductInfo.ProductDesignation ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        p.ProductInfo.OrderCode          ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        p.ProductInfo.ArticleNumber      ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    // ---------- Snackbars & Dialog ----------
     private void SaveSnackBar()
     {
-        Snackbar.Add("The product has been added succesfully", Severity.Success, config =>
+        Snackbar.Add("The product has been added successfully", Severity.Success, config =>
         {
             Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
         });
+    }
 
+    private void EditSnackBar()
+    {
+        Snackbar.Add("Changes have been saved successfully", Severity.Success, config =>
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        });
     }
 
     private async Task ShowFirstProductDialog()
@@ -332,16 +478,6 @@ else
             options: options
         );
 
-        var result = await dialogRef.Result; 
-
-    }
-    private void EditSnackBar()
-    {
-        Snackbar.Add("Changes have been saved succesfully", Severity.Success, config =>
-        {
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        });
-
+        var result = await dialogRef.Result;
     }
 }
-

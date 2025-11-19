@@ -1,5 +1,5 @@
-﻿@using SMEAdapter.Application.DTOs;
-
+﻿﻿@using SMEAdapter.Application.DTOs;
+@using BlazorApp.Components.LangStringSetEditor;
 @using SMEAdapter.Application.ProductDocuments.AddProductDocuments;
 @using SMEAdapter.Application.ProductDocuments.Queries.GetProductDocumentsById;
 @using SMEAdapter.Application.ProductDocuments.UpdateProductDocument;
@@ -7,6 +7,7 @@
 @inject IMediator Mediator
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
+@using System.Globalization
 
 
 <MudGrid Spacing="3">
@@ -29,7 +30,21 @@
             <MudPaper Class="pa-4" Outlined="true">
                 <MudText Typo="Typo.h6">Document Version</MudText>
                 <MudForm @ref="form">
-                    <MudTextField @bind-Value="NewDocument.Language" Label="Language" />
+                    <MudSelect T="string"
+                               Label="Language"
+                               @bind-Value="NewDocument.Language"
+                               Variant="Variant.Outlined"
+                               Dense="true"
+                               Required="true"
+                               Placeholder="Select Language">
+
+                        @foreach (var opt in LanguageOptions)
+                        {
+                            <MudSelectItem T="string" Value="@opt.Code">
+                                @opt.Display (@opt.Code)
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
                     <MudTextField @bind-Value="NewDocument.Version" Label="Version" />
                     <MudTextField @bind-Value="NewDocument.Title" Label="Title" />
                     <MudTextField @bind-Value="NewDocument.Summary" Label="Summary" Lines="3" />
@@ -42,62 +57,67 @@
             </MudPaper>
         </MudItem>
 
-    <!-- Document Identifier -->
-    <MudItem xs="12" md="6">
-        <MudPaper Class="pa-4" Outlined="true">
-            <MudText Typo="Typo.h6">Document Identifier</MudText>
-            <MudTextField @bind-Value="NewDocument.ValueId" Label="Value ID" />
-            <MudTextField @bind-Value="NewDocument.DomainId" Label="Domain ID" />
-        </MudPaper>
-    </MudItem>
+        <!-- Document Identifier -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Outlined="true">
+                <MudText Typo="Typo.h6">Document Identifier</MudText>
+                <MudTextField @bind-Value="NewDocument.ValueId" Label="Value ID" />
+                <MudTextField @bind-Value="NewDocument.DomainId" Label="Domain ID" />
+            </MudPaper>
+        </MudItem>
 
-    <!-- Document Classification -->
-    <MudItem xs="12" md="6">
-        <MudPaper Class="pa-4" Outlined="true">
-            <MudText Typo="Typo.h6">Document Classification</MudText>
-            <MudTextField @bind-Value="NewDocument.ClassificationSystem" Label="Classification System" />
-            <MudTextField @bind-Value="NewDocument.ClassName" Label="Class Name" />
-            <MudTextField @bind-Value="NewDocument.ClassLang" Label="Class Language" />
-            <MudTextField @bind-Value="NewDocument.ClassDescription" Label="Class Description" />
-            <MudTextField @bind-Value="NewDocument.ClassId" Label="Class ID" />
-        </MudPaper>
-    </MudItem>
+        <!-- Document Classification -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Outlined="true">
+                <MudText Typo="Typo.h6">Document Classification</MudText>
+                <MudTextField @bind-Value="NewDocument.ClassificationSystem" Label="Classification System" />
+                <LangStringSetEditor Value="NewDocument.ClassName"
+                                                 ValueChanged="OnClassNameChanged"
+                                                 Label="ClassName"
+                                                 InputLabel="CLassName"
+                                                 MinRows="1"
+                                                  />
+                <MudTextField @bind-Value="NewDocument.ClassLang" Label="Class Language" />
+                <MudTextField @bind-Value="NewDocument.ClassDescription" Label="Class Description" />
+                <MudTextField @bind-Value="NewDocument.ClassId" Label="Class ID" />
+            </MudPaper>
+        </MudItem>
 
-    <!-- File Upload -->
-    <MudItem xs="12" md="6">
-        <MudPaper Class="pa-4" Outlined="true">
-            <MudText Typo="Typo.h6">File Upload</MudText>
-            <MudFileUpload T="IBrowserFile" MaximumFileCount="1" FilesChanged="FileUploaded">
-                <ActivatorContent>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Secondary"
-                               StartIcon="@Icons.Material.Filled.CloudUpload">
-                        @(IsEditMode ? "Replace File" : "Upload File")
-                    </MudButton>
-                </ActivatorContent>
-                <SelectedTemplate>
-                    @if (_selectedFile != null)
-                    {
-                        <MudText>@_selectedFile.Name</MudText>
-                    }
-                    else if (!string.IsNullOrWhiteSpace(NewDocument.FileName))
-                    {
-                        <MudText>@($"Current File: {NewDocument.FileName}")</MudText>
-                    }
-                    else
-                    {
-                        <MudText>No File Selected</MudText>
-                    }
-                </SelectedTemplate>
-            </MudFileUpload>
+        <!-- File Upload -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Outlined="true">
+                <MudText Typo="Typo.h6">File Upload</MudText>
+                <MudFileUpload T="IBrowserFile" MaximumFileCount="1" FilesChanged="FileUploaded">
+                    <ActivatorContent>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Secondary"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                            @(IsEditMode ? "Replace File" : "Upload File")
+                        </MudButton>
+                    </ActivatorContent>
+                    <SelectedTemplate>
+                        @if (_selectedFile != null)
+                        {
+                            <MudText>@_selectedFile.Name</MudText>
+                        }
+                        else if (!string.IsNullOrWhiteSpace(NewDocument.FileName))
+                        {
+                            <MudText>@($"Current File: {NewDocument.FileName}")</MudText>
+                        }
+                        else
+                        {
+                            <MudText>No File Selected</MudText>
+                        }
+                    </SelectedTemplate>
+                </MudFileUpload>
 
-        </MudPaper>
-    </MudItem>
+            </MudPaper>
+        </MudItem>
 
-    <!-- Save Button -->
-    <MudItem xs="12">
-        <MudPaper Class="pa-4" Outlined="true">
-            <MudStack Row = "true">
+        <!-- Save Button -->
+        <MudItem xs="12">
+            <MudPaper Class="pa-4" Outlined="true">
+                <MudStack Row="true">
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Success"
                                Disabled="@(!fileUploaded && !IsEditMode)"
@@ -109,20 +129,20 @@
                                OnClick="ConfirmCancel">
                         Cancel
                     </MudButton>
-            </MudStack>
-            
-        </MudPaper>
-    </MudItem>
-        
+                </MudStack>
+
+            </MudPaper>
+        </MudItem>
+
     }
 </MudGrid>
 
 @code {
 
-    [Parameter] 
+    [Parameter]
     public Guid ProductId { get; set; }
 
-    [Parameter] 
+    [Parameter]
     public bool IsEditMode { get; set; }
 
     [Parameter]
@@ -131,13 +151,13 @@
     [Parameter]
     public bool FormValue { get; set; }
 
-    [Parameter] 
+    [Parameter]
     public EventCallback<bool> FormValueChanged { get; set; }
 
-    [Parameter] 
+    [Parameter]
     public EventCallback<ProductDocumentDto> OnSaved { get; set; }
 
-    
+    private record LangOpt(string Code, string Display);
 
     private bool fileUploaded = false;
     private bool isLoading = false;
@@ -150,20 +170,54 @@
 
     private IBrowserFile? _selectedFile;
 
+    private List<LangOpt> LanguageOptions = CultureInfo
+    .GetCultures(CultureTypes.NeutralCultures)
+    .Where(c => c.TwoLetterISOLanguageName.Length == 2)
+    .GroupBy(c => c.TwoLetterISOLanguageName)  // remove duplicates
+    .Select(g =>
+    {
+        var code = g.Key;
+        var culture = g.First();
+        return new LangOpt(
+            code,
+            CultureInfo.GetCultureInfo(code).EnglishName // display in English
+        );
+    })
+    .OrderBy(x => x.Display)
+    .ToList();
+
+
     protected override async Task OnInitializedAsync()
     {
         if (IsEditMode && DocumentId.HasValue)
         {
             // Fetch existing document from backend
             NewDocument = await Mediator.Send(new GetProductDocumentByIdQuery(DocumentId.Value));
-            fileUploaded = true; // assume it has an existing file
+            EnsureDictionariesInitialized(NewDocument);
+            fileUploaded = true; 
+
             StateHasChanged();
         }
         else
         {
             // Creating a new one
             NewDocument = new ProductDocumentDto();
+            EnsureDictionariesInitialized(NewDocument);
         }
+    }
+
+
+    
+
+
+    private static void EnsureDictionariesInitialized(ProductDocumentDto d)
+    {
+        d.ClassName ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+    private void OnClassNameChanged(Dictionary<string, string>? v)
+    {
+        if (NewDocument == null) return;
+        NewDocument.ClassName = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
 
     private async Task FileUploaded(IBrowserFile files)
@@ -171,7 +225,7 @@
         _selectedFile = files;
         fileUploaded = _selectedFile is not null;
     }
-
+    
     private async Task SaveDocument()
     {
         if (_selectedFile is null)
@@ -234,11 +288,11 @@
             // Add Mode → just tell parent to hide this form
             await Task.Delay(100);
             await FormValueChanged.InvokeAsync(false);
-            
-        }
-        
 
-        
-            
+        }
+
+
+
+
     }
 }

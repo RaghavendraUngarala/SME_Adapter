@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SMEAdapter.Infrastructure;
 
@@ -11,9 +12,11 @@ using SMEAdapter.Infrastructure;
 namespace SMEAdapter.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251117165655_updateMiltiLangSet")]
+    partial class updateMiltiLangSet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,9 +194,8 @@ namespace SMEAdapter.Infrastructure.Migrations
                                 .HasColumnType("nvarchar(50)");
 
                             b1.Property<string>("ClassName")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("Classification_ClassName");
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)");
 
                             b1.Property<string>("ClassificationSystem")
                                 .HasMaxLength(100)

@@ -1,11 +1,7 @@
 ﻿using MediatR;
 using SMEAdapter.Application.DTOs;
 using SMEAdapter.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 
 namespace SMEAdapter.Application.Products.Queries.GetProducts
@@ -23,33 +19,36 @@ namespace SMEAdapter.Application.Products.Queries.GetProducts
         {
             var products = await _productRepository.GetAllAsync(cancellationToken);
 
-            // map Domain -> DTO
-            var productDtos = products.Select(p => new ProductDto
+            static Dictionary<string, string> ToDict(SMEAdapter.Domain.ValueObjects.LangStringSet lss) =>
+                lss.Items.ToDictionary(x => x.Language, x => x.Text, StringComparer.OrdinalIgnoreCase);
+
+            var dtos = products.Select(p => new ProductDto
             {
                 Id = p.Id,
-                ManufacturerName = p.ManufacturerName ?? string.Empty,
-                SerialNumber = p.SerialNumber ?? string.Empty,
-                ImageUrl = p.ImageUrl ?? string.Empty,
-                AddressInfo = new AddressInfo
+                ManufacturerName = ToDict(p.ManufacturerName),
+                SerialNumber = ToDict(p.SerialNumber),
+                ImageUrl = p.ImageUrl,
+
+                ProductInfo = new ProductInfoDto
                 {
-                    ZipCode = p.AddressInfo?.ZipCode ?? string.Empty,
-                    City = p.AddressInfo?.City ?? string.Empty,
-                    Country = p.AddressInfo?.Country ?? string.Empty
+                    ProductDesignation = ToDict(p.ProductInfo.ProductDesignation),
+                    ProductRoot = ToDict(p.ProductInfo.ProductRoot),
+                    ProductFamily = ToDict(p.ProductInfo.ProductFamily),
+                    ProductType = ToDict(p.ProductInfo.ProductType),
+                    OrderCode = ToDict(p.ProductInfo.OrderCode),
+                    ArticleNumber = ToDict(p.ProductInfo.ArticleNumber)
                 },
 
-                ProductInfo = new ProductInfo
+                AddressInfo = new AddressInfoDto
                 {
-                    ProductDesignation = p.ProductInfo?.ProductDesignation ?? string.Empty,
-                    ProductRoot = p.ProductInfo?.ProductRoot ?? string.Empty,
-                    ProductFamily = p.ProductInfo?.ProductFamily ?? string.Empty,
-                    ProductType = p.ProductInfo?.ProductType ?? string.Empty,
-                    OrderCode = p.ProductInfo?.OrderCode ?? string.Empty,
-                    ArticleNumber = p.ProductInfo?.ArticleNumber ?? string.Empty
-                    
+                    Street = ToDict(p.AddressInfo.Street),
+                    ZipCode = ToDict(p.AddressInfo.ZipCode),
+                    City = ToDict(p.AddressInfo.City),
+                    Country = ToDict(p.AddressInfo.Country)
                 }
             }).ToList();
 
-            return productDtos;
+            return dtos;
         }
     }
 }

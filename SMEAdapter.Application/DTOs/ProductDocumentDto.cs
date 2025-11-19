@@ -28,7 +28,7 @@ namespace SMEAdapter.Application.DTOs
         public string? DomainId { get; set; }
 
         public string? ClassificationSystem { get; set; }
-        public string? ClassName { get; set; }
+        public Dictionary<string, string>? ClassName { get; set; }
         public string? ClassLang { get; set; }
         public string? ClassDescription { get; set; }
         public string? ClassId { get; set; }
@@ -38,5 +38,5 @@ namespace SMEAdapter.Application.DTOs
     }
 
 
-   
+
 }

@@ -1,65 +1,91 @@
 ﻿
 @using SMEAdapter.Application.DTOs
+@using BlazorApp.Components.Product   
 @using System.IO
 @inject NavigationManager Navigation
 @inject SMEAdapter.Application.Services.CompanyInfoService CompanyInfo
 @inject ISnackbar Snackbar
+@using BlazorApp.Components.LangStringSetEditor
 
+<br />
 
-<br/>
 <MudStack Row="true" AlignItems="AlignItems.Baseline">
     <MudText Typo="Typo.h3" Class="pl-4">Company Details</MudText>
     <MudIconButton Icon="@Icons.Material.Filled.HelpOutline"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       Target="_blank"
-                                       Href="https://github.com/Ra-one77/SME_Adapter/wiki/Company-Details"
-                                       Style="margin-top: 10px;"
-                                       title="Help: Company Name" />
+                   Color="Color.Primary"
+                   Size="Size.Small"
+                   Target="_blank"
+                   Href="https://github.com/Ra-one77/SME_Adapter/wiki/Company-Details"
+                   Style="margin-top: 10px;"
+                   title="Help: Company Name" />
 </MudStack>
+
 <MudGrid>
     <MudItem xs="12" sm="12" md="6">
         <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
-        <EditForm Model="@company" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-        <DataAnnotationsValidator/>
 
-             <MudText Typo="Typo.h5" Class="font-semibold">Manufacturer Name</MudText>
-                
-                 <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="Full legal name of the product manufacturer" Variant="Variant.Outlined"  Placeholder ="MusterGmbh" @bind-Value="company.CompanyManufacturerName" For="@(() => company.CompanyManufacturerName)" />
-                    
-            <MudDivider Class="my-2" />
+            <EditForm Model="@company" OnValidSubmit="HandleValidSubmit">
+
+                <DataAnnotationsValidator />
+
+                <MudText Typo="Typo.h5" Class="font-semibold">Manufacturer Name</MudText>
+
+                <LangStringSetEditor Value="company.CompanyManufacturerName"
+                                 ValueChanged="OnCompanyNameChanged"
+                                 Label="Company Name"
+                                 InputLabel="Name"
+                                 MinRows="1"
+                                 HelpText="Full legal name of the company" />
+
+                <MudDivider Class="my-2" />
 
                 <MudText Typo="Typo.h5" Class="font-semibold">Address Info</MudText>
+                <MudDivider Class="my-2" />
 
-            <MudDivider Class="my-2" />
+                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Zip Code</MudText>
+                <LangStringSetEditor Value="company.CompanyAddressInfo.ZipCode"
+                                 ValueChanged="OnZipCodeChanged"
+                                 Label="Zip Code"
+                                 InputLabel="ZIP"
+                                 MinRows="1"
+                                 HelpText="ZIP or postal code" />
 
-                <MudText Typo="Typo.h6" Class="font-semibold">Zip Code</MudText>
-                <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="ZIP or postal code for the manufacturer’s address"   Variant="Variant.Outlined" Placeholder="1234" @bind-Value="company.CompanyAddressInfo.ZipCode" For="@(() => company.CompanyAddressInfo.ZipCode)" />
-              
+                <MudText Typo="Typo.h6" Class="font-semibold mt-2">City</MudText>
+                <LangStringSetEditor Value="company.CompanyAddressInfo.City"
+                                 ValueChanged="OnCityChanged"
+                                 Label="City"
+                                 InputLabel="City"
+                                 MinRows="1"
+                                 HelpText="City where the company is based" />
 
-                <MudText Typo="Typo.h6" Class="font-semibold">City</MudText>
-                <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="Group of related products that share similar features" Variant="Variant.Outlined" Placeholder="Musterstadt" @bind-Value="company.CompanyAddressInfo.City" For="@(() => company.CompanyAddressInfo.City)" />
-                
+                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Country</MudText>
+                <LangStringSetEditor Value="company.CompanyAddressInfo.Country"
+                                 ValueChanged="OnCountryChanged"
+                                 Label="Country"
+                                 InputLabel="Country"
+                                 MinRows="1"
+                                 HelpText="Country where the company is based" />
 
-                <MudText Typo="Typo.h6" Class="font-semibold">Country</MudText>
-                <MudTextField Class="custom-font" T="string" HelperTextOnFocus="true" HelperText="Country where the manufacturer is based" Variant="Variant.Outlined" Placeholder="Muster-Bundesland" @bind-Value="company.CompanyAddressInfo.Country" For="@(() => company.CompanyAddressInfo.Country)" />
+                <MudText Typo="Typo.h6" Class="mt-4">Upload Company Logo</MudText>
+                <InputFile OnChange="OnFilesChanged" accept=".png,.jpg,.jpeg,.pdf" />
 
-            <MudText Typo="Typo.h6" Class="mt-4">Upload Company Logo</MudText>
-            <InputFile OnChange="OnFilesChanged" accept=".png,.jpg,.jpeg,.pdf" />
+                <MudStack Row="true" Spacing="2" Class="mt-4">
+                    <MudButton Variant="Variant.Outlined" ButtonType="ButtonType.Submit" Size="Size.Large"
+                               Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                        Save
+                    </MudButton>
 
-            <MudStack Row="true" Spacing="2" Class="mt-4">
-                <MudButton Variant="Variant.Outlined"  ButtonType="ButtonType.Submit" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
-                    Save
-                </MudButton>
-                <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
-                    Home Page
-                </MudButton>
-            </MudStack>
-        </EditForm>
+                    <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large"
+                               Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                        Home Page
+                    </MudButton>
+                </MudStack>
+
+            </EditForm>
+
         </MudPaper>
     </MudItem>
 </MudGrid>
-
 
 @code {
 
@@ -70,19 +96,54 @@
     [Parameter] 
     public EventCallback<CompanyDto> OnCompleted { get; set; }
 
+    protected override void OnInitialized()
+    {
+        // Ensure multilingual dictionaries exist
+        company.CompanyManufacturerName ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        company.CompanyAddressInfo ??= new CompanyAddressInfoDto();
+        company.CompanyAddressInfo.ZipCode ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        company.CompanyAddressInfo.City ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        company.CompanyAddressInfo.Country ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    }
+
+    // ======== LangStringInput Handlers ========
+    private void OnCompanyNameChanged(Dictionary<string, string>? v)
+    {
+        company.CompanyManufacturerName = v ?? new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnZipCodeChanged(Dictionary<string, string>? v)
+    {
+        company.CompanyAddressInfo.ZipCode = v ?? new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnCityChanged(Dictionary<string, string>? v)
+    {
+        company.CompanyAddressInfo.City = v ?? new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private void OnCountryChanged(Dictionary<string, string>? v)
+    {
+        company.CompanyAddressInfo.Country = v ?? new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    // ======== Submit Handlers ========
     private async Task HandleValidSubmit()
     {
         CompanyInfo.SetCompany(company);
         SaveSnackBar();
-
-        await InvokeAsync(() => OnCompleted.InvokeAsync(company));
+        Console.WriteLine(company.CompanyManufacturerName);
+        await OnCompleted.InvokeAsync(company);
     }
 
-    private void HandleInvalidSubmit()
+    private void SaveSnackBar()
     {
-        Console.WriteLine("Invalid submit");
+        Snackbar.Add("The company details have been saved successfully", Severity.Success,
+            config => Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft);
     }
 
+    // ======== File Upload ========
     private async Task OnFilesChanged(InputFileChangeEventArgs e)
     {
         uploadedFile = e.File;
@@ -93,14 +154,4 @@
 
         company.CompanyImageUrl = $"images/{uploadedFile.Name}";
     }
-
-    private void SaveSnackBar()
-    {
-        Snackbar.Add("The company details have been saved successfully", Severity.Success, config =>
-        {
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        });
-
-    }
-
 }
