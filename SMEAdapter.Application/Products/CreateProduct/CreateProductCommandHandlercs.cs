@@ -26,6 +26,7 @@ namespace SMEAdapter.Application.Products.CreateProduct
 
             var product = new Product(
                 manufacturerName: LangStringSet.FromDictionary(dto.ManufacturerName),
+               
                 productInfo: new ProductInfo(
                     LangStringSet.FromDictionary(dto.ProductInfo.ProductDesignation),
                     LangStringSet.FromDictionary(dto.ProductInfo.ProductRoot),
@@ -33,6 +34,7 @@ namespace SMEAdapter.Application.Products.CreateProduct
                     LangStringSet.FromDictionary(dto.ProductInfo.ProductType),
                     LangStringSet.FromDictionary(dto.ProductInfo.OrderCode),
                     LangStringSet.FromDictionary(dto.ProductInfo.ArticleNumber)
+
                 ),
                 addressInfo: new AddressInfo(
                     LangStringSet.FromDictionary(dto.AddressInfo.Street),
@@ -43,6 +45,10 @@ namespace SMEAdapter.Application.Products.CreateProduct
                 serialNumber: LangStringSet.FromDictionary(dto.SerialNumber),
                 imageUrl: dto.ImageUrl
             );
+            if (dto.CompanyId.HasValue)
+            {
+                product.SetCompany(dto.CompanyId.Value);
+            }
 
             await _productRepository.AddAsync(product, cancellationToken);
             return product.Id;

@@ -47,6 +47,11 @@ namespace SMEAdapter.Application.Products.UpdateProduct
                 LangStringSet.FromDictionary(dto.AddressInfo.Country)
             ));
 
+            if (dto.CompanyId.HasValue)
+            {
+                existing.SetCompany(dto.CompanyId.Value);
+            }
+
             await _productRepository.UpdateAsync(existing, cancellationToken);
             return Unit.Value;
         }

@@ -22,10 +22,33 @@ namespace SMEAdapter.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SMEAdapter.Domain.Entities.Company", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CompanyImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("CompanyManufacturerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ManufacturerName");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Companies");
+                });
+
             modelBuilder.Entity("SMEAdapter.Domain.Entities.Product", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CompanyId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("CompanyLogo")
@@ -70,7 +93,10 @@ namespace SMEAdapter.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<int>("OwnershipType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -78,6 +104,55 @@ namespace SMEAdapter.Infrastructure.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductDocuments");
+                });
+
+            modelBuilder.Entity("SMEAdapter.Domain.Entities.ProductDocumentAssignment", b =>
+                {
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductDocumentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ProductId", "ProductDocumentId");
+
+                    b.HasIndex("ProductDocumentId");
+
+                    b.ToTable("ProductDocumentAssignments", (string)null);
+                });
+
+            modelBuilder.Entity("SMEAdapter.Domain.Entities.Company", b =>
+                {
+                    b.OwnsOne("SMEAdapter.Domain.Entities.CompanyAddressInfo", "CompanyAddressInfo", b1 =>
+                        {
+                            b1.Property<Guid>("CompanyId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Address_City");
+
+                            b1.Property<string>("Country")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Address_Country");
+
+                            b1.Property<string>("ZipCode")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Address_ZipCode");
+
+                            b1.HasKey("CompanyId");
+
+                            b1.ToTable("Companies");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CompanyId");
+                        });
+
+                    b.Navigation("CompanyAddressInfo")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SMEAdapter.Domain.Entities.Product", b =>
@@ -170,8 +245,7 @@ namespace SMEAdapter.Infrastructure.Migrations
                     b.HasOne("SMEAdapter.Domain.Entities.Product", "Product")
                         .WithMany("Documents")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.OwnsOne("SMEAdapter.Domain.Entities.DocumentClassification", "Classification", b1 =>
                         {
@@ -233,8 +307,13 @@ namespace SMEAdapter.Infrastructure.Migrations
                             b1.Property<Guid>("ProductDocumentId")
                                 .HasColumnType("uniqueidentifier");
 
+                            b1.Property<string>("Description")
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Version_Description");
+
                             b1.Property<string>("Keywords")
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Version_Keywords");
 
                             b1.Property<string>("Language")
                                 .HasMaxLength(50)
@@ -248,19 +327,20 @@ namespace SMEAdapter.Infrastructure.Migrations
                                 .HasMaxLength(200)
                                 .HasColumnType("nvarchar(200)");
 
-                            b1.Property<string>("State")
-                                .HasMaxLength(50)
-                                .HasColumnType("nvarchar(50)");
-
-                            b1.Property<DateTime?>("StateDate")
+                            b1.Property<DateTime?>("StatusSetDate")
                                 .HasColumnType("datetime2");
 
-                            b1.Property<string>("Summary")
-                                .HasColumnType("nvarchar(max)");
+                            b1.Property<string>("StatusValue")
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar(100)");
+
+                            b1.Property<string>("SubTitle")
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Version_SubTitle");
 
                             b1.Property<string>("Title")
-                                .HasMaxLength(255)
-                                .HasColumnType("nvarchar(255)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Version_Title");
 
                             b1.Property<string>("Version")
                                 .HasMaxLength(50)
@@ -286,9 +366,35 @@ namespace SMEAdapter.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SMEAdapter.Domain.Entities.ProductDocumentAssignment", b =>
+                {
+                    b.HasOne("SMEAdapter.Domain.Entities.ProductDocument", "ProductDocument")
+                        .WithMany("DocumentAssignments")
+                        .HasForeignKey("ProductDocumentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SMEAdapter.Domain.Entities.Product", "Product")
+                        .WithMany("DocumentAssignments")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ProductDocument");
+                });
+
             modelBuilder.Entity("SMEAdapter.Domain.Entities.Product", b =>
                 {
+                    b.Navigation("DocumentAssignments");
+
                     b.Navigation("Documents");
+                });
+
+            modelBuilder.Entity("SMEAdapter.Domain.Entities.ProductDocument", b =>
+                {
+                    b.Navigation("DocumentAssignments");
                 });
 #pragma warning restore 612, 618
         }

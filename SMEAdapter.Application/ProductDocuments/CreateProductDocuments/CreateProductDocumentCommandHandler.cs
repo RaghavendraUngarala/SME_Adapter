@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SMEAdapter.Domain.Entities.ProductDocument;
 
 
 namespace SMEAdapter.Application.ProductDocuments.AddProductDocuments
@@ -22,11 +23,18 @@ namespace SMEAdapter.Application.ProductDocuments.AddProductDocuments
             _repository = repository;
         }
 
-        public async Task<Guid> Handle(CreateProductDocumentCommand request, CancellationToken cancellationToken)
+        public async Task<Guid> Handle(CreateProductDocumentCommand request, CancellationToken ct)
         {
             var dto = request.ProductDocument;
 
-        
+
+
+            if (!dto.ProductId.HasValue)
+                throw new InvalidOperationException("Document must have a ProductId when created.");
+
+            var productId = dto.ProductId.Value;
+
+
             var document = new ProductDocument(
                 dto.FileName,
                 dto.ContentType,
@@ -34,22 +42,29 @@ namespace SMEAdapter.Application.ProductDocuments.AddProductDocuments
             );
 
             
-            document.SetProduct(dto.ProductId);
 
-          
+
+            var titleSet = LangStringSet.FromDictionary(dto.Title);
+            var subTitleSet = LangStringSet.FromDictionary(dto.SubTitle);
+            var descriptionSet = LangStringSet.FromDictionary(dto.Description);
+            var keywordsSet = LangStringSet.FromDictionary(dto.Keywords);
+
+            dto.StatusSetDate ??= DateTime.UtcNow;
             document.UpdateVersion(
                 dto.Language,
                 dto.Version,
-                dto.Title,
-                dto.Summary,
-                dto.Keywords,
-                dto.State,
-                dto.StateDate,
+                titleSet,
+                subTitleSet,
+                descriptionSet,
+                keywordsSet,
+                dto.StatusValue,
+                dto.StatusSetDate,
                 dto.OrganisationName,
                 dto.OrganisationOfficialName
             );
 
             
+
             document.UpdateIdentifier(dto.ValueId, dto.DomainId);
 
            
@@ -63,10 +78,28 @@ namespace SMEAdapter.Application.ProductDocuments.AddProductDocuments
                 dto.ClassId
             );
 
-            // STEP 6: Save
-            await _repository.AddAsync(document, cancellationToken);
+
+            if (dto.OwnershipType == ProductDocument.DocumentOwnershipType.Owned)
+            {
+                // Owned = tied only to this product
+                document.AssignToProduct(productId);
+            }
+            else
+            {
+                // Shared = ProductId must be null
+                document.MarkAsShared();
+            }
+
+            // 7️⃣ Save document first (needs ID)
+            await _repository.AddAsync(document, ct);
+
+            // 8️⃣ Always create assignment (both owned and shared)
+            await _repository.AddAssignmentAsync(productId, document.Id, ct);
 
             return document.Id;
+
+
+            
         }
     }
 }

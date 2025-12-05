@@ -12,9 +12,12 @@ namespace SMEAdapter.Application.DTOs
         public Guid Id { get; set; }
         public Dictionary<string, string> ManufacturerName { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, string> SerialNumber { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-
+        public int OwnedDocumentCount { get; set; }
+        public int SharedDocumentCount { get; set; }
+        public int TotalDocumentCount { get; set; }
         public ProductInfoDto ProductInfo { get; set; } = new();
         public AddressInfoDto AddressInfo { get; set; } = new();
+        public Guid? CompanyId { get; set; }
 
         public string? ImageUrl { get; set; }
     }

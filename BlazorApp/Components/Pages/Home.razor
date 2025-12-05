@@ -3,6 +3,10 @@
 @using BlazorApp.Components.Product;
 @inject SMEAdapter.Application.Services.CompanyInfoService CompanyInfo
 @using SMEAdapter.Application.DTOs;
+@inject IMediator Mediator
+@using SMEAdapter.Application.Companies.CreateCompanies
+
+
 
 <MudPaper Class="pa-6 ma-4" Elevation="4">
     <MudText Typo="Typo.h4" GutterBottom="true">
@@ -12,18 +16,21 @@
         Take your first steps: set up your company and your first product.
     </MudText>
 
-    <MudStepper CenterLabels="true" CurrentStepColor="Color.Secondary" @bind-ActiveIndex="_activeIndex">
+    <MudStepper CenterLabels="true" CurrentStepColor="Color.Secondary" @bind-ActiveIndex="_activeIndex" >
         <!-- Step 1: Company Details -->
-        <MudStep Title="Company Details">
-
-            <CompanyForm OnCompleted="@GoNextStep" />
+        <MudStep Title="Company Details" >
+            <div style="width : 3000px">
+               <CompanyForm OnCompleted="@GoNextStep" />
+            </div>
         </MudStep>
 
-        
+
         <MudStep Title="First Product">
             @if (CompanyInfo.CurrentCompany != null)
             {
-                <ProductForm IsFirstProduct="true" />
+                <div style="width : 1500px">
+                   <InitialProductFrom IsFirstProduct="true"></InitialProductFrom>
+                </div>
             }
             else
             {
@@ -42,10 +49,10 @@
 
         // Also keep it in the service for consistency
         CompanyInfo.CurrentCompany = company;
-       
+        var newId = await Mediator.Send(new CreateCompanyCommand(company));
         _activeIndex++;
         await InvokeAsync(StateHasChanged);
     }
 
-   
+
 }

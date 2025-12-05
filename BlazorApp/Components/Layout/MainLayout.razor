@@ -35,9 +35,12 @@
                     {
                         <!-- Company image -->
                     <MudAvatar Size="Size.Large">
+                        @if (CompanyInfo.CurrentCompany.CompanyImageUrl is not null)
+                        {
                         <MudImage Src="@CompanyInfo.CurrentCompany.CompanyImageUrl"
                                   Alt="CompanyImage"
                                   Style="object-fit:contain;width:100%; height:100%;" />
+                        }
                     </MudAvatar>
                     }
               

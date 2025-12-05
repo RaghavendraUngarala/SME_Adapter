@@ -12,6 +12,8 @@ namespace SMEAdapter.Domain.Entities
     {
         public Guid Id { get; private set; } = Guid.NewGuid();
 
+        public Guid? CompanyId { get; private set; }
+
         // Multilingual manufacturer name
         public LangStringSet ManufacturerName { get; private set; } = new(null);
 
@@ -26,6 +28,10 @@ namespace SMEAdapter.Domain.Entities
 
         public ICollection<ProductDocument>? Documents { get; private set; }
 
+        public ICollection<ProductDocumentAssignment> DocumentAssignments { get; private set; }
+          = new List<ProductDocumentAssignment>();
+
+
         // Required by EF Core
         protected Product() { }
 
@@ -34,6 +40,7 @@ namespace SMEAdapter.Domain.Entities
             ProductInfo productInfo,
             AddressInfo addressInfo,
             LangStringSet serialNumber,
+            
             string? imageUrl = null)
         {
             ManufacturerName = manufacturerName;
@@ -41,12 +48,18 @@ namespace SMEAdapter.Domain.Entities
             AddressInfo = addressInfo;
             SerialNumber = serialNumber;
             ImageUrl = imageUrl;
+            
+
         }
         public void ReplaceManufacturerName(LangStringSet v) => ManufacturerName = v ?? new(null);
         public void ReplaceSerialNumber(LangStringSet v) => SerialNumber = v ?? new(null);
         public void ReplaceAddress(AddressInfo v) => AddressInfo = v ?? new();
         public void ReplaceProductInfo(ProductInfo v) => ProductInfo = v ?? new();
         public void SetImageUrl(string? url) => ImageUrl = url;
+        public void SetCompany(Guid companyId)
+        {
+            CompanyId = companyId;
+        }
     }
 
     public class ProductInfo

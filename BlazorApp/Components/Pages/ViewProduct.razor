@@ -109,9 +109,29 @@ else
             <MudTd DataLabel="Order Code">@GetEnglishValue(product.ProductInfo.OrderCode)</MudTd>
             <MudTd DataLabel="Article Number">@GetEnglishValue(product.ProductInfo.ArticleNumber)</MudTd>
             <MudTd DataLabel="Serial Number">@GetEnglishValue(product.SerialNumber)</MudTd>
-            <MudButton OnClick="@(() => ViewDocuments(product.Id))" Variant="Variant.Outlined" Style="background-color:#0D47A1; color:white; font-weight:bold;">
-                View Documents
-            </MudButton>
+            <MudTd DataLabel="Documents">
+                 <MudStack Row="true" Spacing="1">
+
+                    <MudChip T= "int" Color="Color.Success" Variant="Variant.Outlined" Size="Size.Small">
+                            Owned: @product.OwnedDocumentCount
+                    </MudChip>
+
+                    <MudChip T = "int" Color="Color.Info" Variant="Variant.Outlined" Size="Size.Small">
+                            Shared: @product.SharedDocumentCount
+                    </MudChip>
+
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Class="ml-2"
+                                   OnClick="@(() => ViewDocuments(product.Id))">
+                            Manage
+                        </MudButton>
+
+                </MudStack>
+            </MudTd>
+
+           
 
         </RowTemplate>
        
@@ -123,13 +143,13 @@ else
                Label="Show Manufacturer Info" />
     
     <div style="display: flex; gap: 20px;">
-        <MudButton Class="mt-10" Variant="Variant.Outlined" Color="Color.Error" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';" Disabled="@(!CanDelete)" OnClick="DeleteSelectedProduct">
+        <MudButton Class="mt-10" Variant="Variant.Filled" Color="Color.Error" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px" Disabled="@(!CanDelete)" OnClick="DeleteSelectedProduct">
             <MudIcon Icon="@Icons.Material.Filled.Delete" /> Delete Product
         </MudButton>
-        <MudButton Class="mt-10"  Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(!CanEdit)" OnClick="NavigateToEditPage" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+        <MudButton Class="mt-10" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!CanEdit)" OnClick="NavigateToEditPage" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px">
             <MudIcon Icon="@Icons.Material.Filled.Edit" /> Edit Product
         </MudButton>
-        <MudButton Class="mt-10" Variant="Variant.Outlined" Color="Color.Primary"  OnClick="NavigateToAddPage" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+        <MudButton Class="mt-10" Variant="Variant.Filled" Color="Color.Secondary"  OnClick="NavigateToAddPage" Size="Size.Large" Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px">
             <MudIcon Icon="@Icons.Material.Filled.Add" /> Add Product
         </MudButton>
     </div>
@@ -189,27 +209,40 @@ else
 
     private async Task DeleteSelectedProduct()
     {
-        if (selectedItems == null || !selectedItems.Any())
-            return;
+           if (selectedItems == null || !selectedItems.Any())
+                    return;
 
-        bool confirmed = await DialogService.ShowMessageBox(
-            "Delete Products",
-            $"Are you sure you want to delete {selectedItems.Count} selected products?",
-            yesText: "Yes", noText: "No"
-        ) == true;
+            var parameters = new DialogParameters
+            {
+                { "Count", selectedItems.Count }
+            };
 
-        if (!confirmed)
-            return;
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Medium, 
+            };
 
-        var idsToDelete = selectedItems.Select(p => Guid.Parse(p.Id.ToString())).ToList();
-        await Mediator.Send(new DeleteProductCommand(idsToDelete));
+            var dialogRef = await DialogService.ShowAsync<DeleteProductsDialog>(
+                "Delete Products",
+                parameters,
+                options
+            );
 
-        await LoadProducts(); 
+            var result = await dialogRef.Result;
 
-        DeleteSnackBar(); 
+            if (result.Canceled)
+                return;
 
-        selectedItems.Clear();
+            var idsToDelete = selectedItems.Select(p => p.Id).ToList();
+            await Mediator.Send(new DeleteProductCommand(idsToDelete));
+
+            await LoadProducts();
+            DeleteSnackBar();
+
+            selectedItems.Clear();
     }
+
 
     protected override async Task OnInitializedAsync()
     {

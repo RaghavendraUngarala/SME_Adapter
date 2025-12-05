@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 
 namespace SMEAdapter.Application.ProductDocuments.DeleteProductDocuments
 {
-    public record DeleteProductDocumentCommand(List<Guid> DocumentIds) : IRequest<Unit>;
+    public record DeleteProductDocumentCommand(Guid ProductId, List<Guid> DocumentIds) : IRequest<Unit>;
 
 }

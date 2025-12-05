@@ -1,0 +1,38 @@
+﻿@inherits ComponentBase
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@using SMEAdapter.Application.DTOs
+
+<MudDialog >
+    <TitleContent >@(IsEditMode ? "Edit Company" : "New Company")</TitleContent>
+
+    <DialogContent >
+        <div style="width : 2500px" >
+            <CompanyForm ExistingCompany="ExistingCompany"
+                         OnCompleted="HandleCompleted" />
+        </div>
+        
+       
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance Dialog { get; set; } = default!;
+
+    [Parameter] public CompanyDto? ExistingCompany { get; set; }
+    private bool IsEditMode => ExistingCompany != null;
+
+    private async Task HandleCompleted(CompanyDto company)
+    {
+        Dialog.Close(DialogResult.Ok(company));   // THIS RETURNS COMPANY DTO TO CALLER
+    }
+
+    private void Cancel()
+    {
+        Dialog.Cancel();
+    }
+}

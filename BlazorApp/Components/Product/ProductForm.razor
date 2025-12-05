@@ -20,188 +20,144 @@
 {
     <MudGrid>
         <MudItem xs="12" sm="12" md="12">
-            <MudPaper Class="pa-6 ma-4" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
+            <MudPaper Class="pa-6 ma-2" Elevation="8" Style="border: 1px solid lightgray; border-radius: 8px;">
                 <EditForm Model="@product" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
 
-                    <MudExpansionPanels>
+                    <MudStack Row="true" AlignItems="AlignItems.Baseline">
+                    <MudText  Typo="Typo.h4" Class="header-text" >Manufacturer</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.HelpOutline"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   Target="_blank"
+                                   Href="https://github.com/Ra-one77/SME_Adapter/wiki/Company-Details"
+                                   Style="margin-top: 10px;"
+                                   title="Help: Company Name" />
+                     </MudStack>
+                    <MudText Typo="Typo.h5"><b>@selectedCompanyName</b></MudText>
+                    
 
-                        <!-- ========== Manufacturer Info ========== -->
-                        <MudExpansionPanel Expanded="false" TextColor="Color.Primary" HeaderClass="mud-expand-panel-header">
-                            <TitleContent>
-                                <MudStack Row="true" AlignItems="AlignItems.Baseline">
-                                    <MudText Typo="Typo.h4" Class="header-text">Manufacturer Info</MudText>
-                                    <MudIconButton Icon="@Icons.Material.Filled.HelpOutline"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   Target="_blank"
-                                                   Href="https://github.com/Ra-one77/SME_Adapter/wiki/Company-Details"
-                                                   Style="margin-top: 10px;"
-                                                   title="Help: Company Name" />
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Domain"
+                               Class="mt-2"
+                               OnClick="OpenCompanySelectDialog">
+                        Select Manufacturer
+                    </MudButton>
+
+                    <MudStack Row="true" AlignItems="AlignItems.Baseline">
+                        <MudText Typo="Typo.h4" Class="header-text">Product Information</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.HelpOutline"
+                                        Color="Color.Primary"
+                                        Size="Size.Small"
+                                        Target="_blank"
+                                        Href="https://github.com/Ra-one77/SME_Adapter/wiki/Product-Info"
+                                        Style="margin-top: 10px;"
+                                        title="Help: Product Info" />
+                    </MudStack>
+                           
+
+                            
+                    <MudText Typo="Typo.h6" Class="font-semibold">Product Family</MudText>
+                    <LangStringSetEditor Value="product.ProductInfo.ProductFamily"
+                                        ValueChanged="OnProductFamilyChanged"
+                                        Label="Product Family"
+                                        InputLabel="Family"
+                                        MinRows="1"
+                                        HelpText="Group of related products that share similar features" />
+
+                    <MudText Typo="Typo.h6" Class="font-semibold mt-2">Product Root</MudText>
+                    <LangStringSetEditor Value="product.ProductInfo.ProductRoot"
+                                        ValueChanged="OnProductRootChanged"
+                                        Label="Product Root"
+                                        InputLabel="Root"
+                                        MinRows="1"
+                                        HelpText="Base model from which product variants are derived" />
+
+                    <MudText Typo="Typo.h6" Class="font-semibold mt-2">Product Type</MudText>
+                    <LangStringSetEditor Value="product.ProductInfo.ProductType"
+                                        ValueChanged="OnProductTypeChanged"
+                                        Label="Product Type"
+                                        InputLabel="Type"
+                                        MinRows="1"
+                                        HelpText="General category the product belongs to" />
+
+                    <MudText Typo="Typo.h6" Class="font-semibold mt-2">Product Designation</MudText>
+                    <LangStringSetEditor Value="product.ProductInfo.ProductDesignation"
+                                        ValueChanged="OnProductDesignationChanged"
+                                        Label="Product Designation"
+                                        InputLabel="Designation"
+                                        MinRows="1"
+                                        HelpText="Official name used to market or identify this product" />
+
+                    <MudText Typo="Typo.h6" Class="font-semibold mt-2">Serial Number</MudText>
+                    <LangStringSetEditor Value="product.SerialNumber"
+                                        ValueChanged="OnSerialNumberChanged"
+                                        Label="Serial Number"
+                                        InputLabel="Serial"
+                                        MinRows="1"
+                                        HelpText="Internal code used for stock and inventory tracking" />
+
+                    <MudText Typo="Typo.h6" Class="font-semibold mt-2">Order Code</MudText>
+                    <LangStringSetEditor Value="product.ProductInfo.OrderCode"
+                                        ValueChanged="OnOrderCodeChanged"
+                                        Label="Order Code"
+                                        InputLabel="Order Code"
+                                        MinRows="1"
+                                        HelpText="Code customers use to order this exact configuration" />
+
+                    <MudText Typo="Typo.h6" Class="font-semibold mt-2">Article Number</MudText>
+                    <LangStringSetEditor Value="product.ProductInfo.ArticleNumber"
+                                        ValueChanged="OnArticleNumberChanged"
+                                        Label="Article Number"
+                                        InputLabel="Article Number"
+                                        MinRows="1"
+                                        HelpText="Unique identifier for each individual unit. Used for warranty and traceability" />
+
+                    <!-- Product Image -->
+                    <MudText Typo="Typo.h6" Class="mt-4">Product Image</MudText>
+
+                    <MudFileUpload T="IBrowserFile"
+                                    MaximumFileCount="1"
+                                    Accept="image/*"
+                                    FilesChanged="OnFilesChanged">
+                        <ActivatorContent>
+                            <MudButton Variant="Variant.Filled"
+                                        Color="Color.Secondary"
+                                        StartIcon="@Icons.Material.Filled.CloudUpload">
+                                @(IsEditMode ? "Replace Image" : "Upload Image")
+                            </MudButton>
+                        </ActivatorContent>
+
+                        <SelectedTemplate Context="selectedFile">
+                            @if (selectedFile != null)
+                            {
+                                <MudText>@selectedFile.Name</MudText>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
+                            {
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudAvatar Size="Size.Medium" Image="@product.ImageUrl" />
+                                    <MudText>@($"Current: {Path.GetFileName(product.ImageUrl)}")</MudText>
                                 </MudStack>
-                            </TitleContent>
+                            }
+                            else
+                            {
+                                <MudText>No image selected</MudText>
+                            }
+                        </SelectedTemplate>
+                    </MudFileUpload>
 
-                            <ChildContent>
-                                <MudText Typo="Typo.h5" Class="font-semibold">Manufacturer Name</MudText>
-
-                                <LangStringSetEditor Value="product.ManufacturerName"
-                                                 ValueChanged="OnManufacturerNameChanged"
-                                                 Label="Manufacturer Name"
-                                                 InputLabel="Name"
-                                                 MinRows="1"
-                                                 HelpText="Full legal name of the product manufacturer" />
-
-                                <MudDivider Class="my-2"></MudDivider>
-
-                                <MudText Typo="Typo.h5" Class="font-semibold">Address Info</MudText>
-
-                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Zip Code</MudText>
-                                <LangStringSetEditor Value="product.AddressInfo.ZipCode"
-                                                 ValueChanged="OnZipCodeChanged"
-                                                 Label="Zip Code"
-                                                 InputLabel="ZIP"
-                                                 MinRows="1"
-                                                 HelpText="ZIP or postal code for the manufacturer’s address" />
-
-                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">City</MudText>
-                                <LangStringSetEditor Value="product.AddressInfo.City"
-                                                 ValueChanged="OnCityChanged"
-                                                 Label="City"
-                                                 InputLabel="City"
-                                                 MinRows="1"
-                                                 HelpText="City where the manufacturer is based" />
-
-                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Country</MudText>
-                                <LangStringSetEditor Value="product.AddressInfo.Country"
-                                                 ValueChanged="OnCountryChanged"
-                                                 Label="Country"
-                                                 InputLabel="Country"
-                                                 MinRows="1"
-                                                 HelpText="Country where the manufacturer is based" />
-                            </ChildContent>
-                        </MudExpansionPanel>
-
-                        <MudDivider Class="my-4" />
-
-                        <!-- ========== Product Info ========== -->
-                        <MudExpansionPanel Expanded="true" TextColor="Color.Primary" HeaderClass="mud-expand-panel-header">
-                            <TitleContent>
-                                <MudStack Row="true" AlignItems="AlignItems.Baseline">
-                                    <MudText Typo="Typo.h4" Class="header-text">Product Info</MudText>
-                                    <MudIconButton Icon="@Icons.Material.Filled.HelpOutline"
-                                                   Color="Color.Primary"
-                                                   Size="Size.Small"
-                                                   Target="_blank"
-                                                   Href="https://github.com/Ra-one77/SME_Adapter/wiki/Product-Info"
-                                                   Style="margin-top: 10px;"
-                                                   title="Help: Product Info" />
-                                </MudStack>
-                            </TitleContent>
-
-                            <ChildContent>
-                                <MudText Typo="Typo.h6" Class="font-semibold">Product Family</MudText>
-                                <LangStringSetEditor Value="product.ProductInfo.ProductFamily"
-                                                 ValueChanged="OnProductFamilyChanged"
-                                                 Label="Product Family"
-                                                 InputLabel="Family"
-                                                 MinRows="1"
-                                                 HelpText="Group of related products that share similar features" />
-
-                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Product Root</MudText>
-                                <LangStringSetEditor Value="product.ProductInfo.ProductRoot"
-                                                 ValueChanged="OnProductRootChanged"
-                                                 Label="Product Root"
-                                                 InputLabel="Root"
-                                                 MinRows="1"
-                                                 HelpText="Base model from which product variants are derived" />
-
-                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Product Type</MudText>
-                                <LangStringSetEditor Value="product.ProductInfo.ProductType"
-                                                 ValueChanged="OnProductTypeChanged"
-                                                 Label="Product Type"
-                                                 InputLabel="Type"
-                                                 MinRows="1"
-                                                 HelpText="General category the product belongs to" />
-
-                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Product Designation</MudText>
-                                <LangStringSetEditor Value="product.ProductInfo.ProductDesignation"
-                                                 ValueChanged="OnProductDesignationChanged"
-                                                 Label="Product Designation"
-                                                 InputLabel="Designation"
-                                                 MinRows="1"
-                                                 HelpText="Official name used to market or identify this product" />
-
-                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Serial Number</MudText>
-                                <LangStringSetEditor Value="product.SerialNumber"
-                                                 ValueChanged="OnSerialNumberChanged"
-                                                 Label="Serial Number"
-                                                 InputLabel="Serial"
-                                                 MinRows="1"
-                                                 HelpText="Internal code used for stock and inventory tracking" />
-
-                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Order Code</MudText>
-                                <LangStringSetEditor Value="product.ProductInfo.OrderCode"
-                                                 ValueChanged="OnOrderCodeChanged"
-                                                 Label="Order Code"
-                                                 InputLabel="Order Code"
-                                                 MinRows="1"
-                                                 HelpText="Code customers use to order this exact configuration" />
-
-                                <MudText Typo="Typo.h6" Class="font-semibold mt-2">Article Number</MudText>
-                                <LangStringSetEditor Value="product.ProductInfo.ArticleNumber"
-                                                 ValueChanged="OnArticleNumberChanged"
-                                                 Label="Article Number"
-                                                 InputLabel="Article Number"
-                                                 MinRows="1"
-                                                 HelpText="Unique identifier for each individual unit. Used for warranty and traceability" />
-
-                                <!-- Product Image -->
-                                <MudText Typo="Typo.h6" Class="mt-4">Product Image</MudText>
-
-                                <MudFileUpload T="IBrowserFile"
-                                               MaximumFileCount="1"
-                                               Accept="image/*"
-                                               FilesChanged="OnFilesChanged">
-                                    <ActivatorContent>
-                                        <MudButton Variant="Variant.Filled"
-                                                   Color="Color.Secondary"
-                                                   StartIcon="@Icons.Material.Filled.CloudUpload">
-                                            @(IsEditMode ? "Replace Image" : "Upload Image")
-                                        </MudButton>
-                                    </ActivatorContent>
-
-                                    <SelectedTemplate Context="selectedFile">
-                                        @if (selectedFile != null)
-                                        {
-                                            <MudText>@selectedFile.Name</MudText>
-                                        }
-                                        else if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
-                                        {
-                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                                <MudAvatar Size="Size.Medium" Image="@product.ImageUrl" />
-                                                <MudText>@($"Current: {Path.GetFileName(product.ImageUrl)}")</MudText>
-                                            </MudStack>
-                                        }
-                                        else
-                                        {
-                                            <MudText>No image selected</MudText>
-                                        }
-                                    </SelectedTemplate>
-                                </MudFileUpload>
-
-                                @if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
-                                {
-                                    <MudImage Src="@product.ImageUrl"
-                                              Alt="Product Image"
-                                              Width="150"
-                                              Height="150"
-                                              Style="border-radius: 8px; object-fit: cover; margin-top: 10px;" />
-                                }
-                            </ChildContent>
-                        </MudExpansionPanel>
-
-                    </MudExpansionPanels>
-
+                    @if (!string.IsNullOrWhiteSpace(product?.ImageUrl))
+                    {
+                        <MudImage Src="@product.ImageUrl"
+                                    Alt="Product Image"
+                                    Width="150"
+                                    Height="150"
+                                    Style="border-radius: 8px; object-fit: cover; margin-top: 10px;" />
+                    }
+                            
+                        
                     <MudDivider Class="my-4" />
 
                     <!-- ========== Action Buttons ========== -->
@@ -213,14 +169,17 @@
                                    Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
                             @(IsEditMode ? "Update" : "Save")
                         </MudButton>
-
-                        <MudButton Href="/viewproducts"
-                                   Variant="Variant.Outlined"
-                                   Color="Color.Secondary"
-                                   Size="Size.Large"
-                                   Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
-                            Back
-                        </MudButton>
+                        
+                        
+                            <MudButton Href="/viewproducts"
+                                       Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       Size="Size.Large"
+                                       Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';">
+                                Back
+                            </MudButton>
+                        
+                        
                     </MudStack>
                 </EditForm>
             </MudPaper>
@@ -250,13 +209,26 @@ else
 <br />
 
 @code {
-    [Parameter] public bool IsFirstProduct { get; set; }
-    [Parameter] public bool IsEditMode { get; set; } = false;
-    [Parameter] public Guid ProductId { get; set; }
+    [Parameter] 
+    public bool IsFirstProduct { get; set; }
+
+    [Parameter] 
+    public bool IsEditMode { get; set; } = false;
+
+    [Parameter] 
+    public Guid ProductId { get; set; }
+
+    [Parameter]
+    public Guid CompanyId { get; set; }
 
     private ProductDto? product;
     private string productImageUrl = string.Empty;
     private IBrowserFile? selectedFile;
+
+    private CompanyDto? selectedCompany;
+
+    private string selectedCompanyName = "";
+    private string selectedCompanyAddress = "";
 
     // ---------- LangStringSetEditor handlers ----------
     private void OnManufacturerNameChanged(Dictionary<string, string>? v)
@@ -365,11 +337,17 @@ else
 
         if (IsEditMode)
         {
+            product.CompanyId = CompanyId != Guid.Empty
+                ? CompanyId
+                : CompanyInfo.CurrentCompany?.Id ?? Guid.Empty;
             await Mediator.Send(new UpdateProductCommand(product));
             EditSnackBar();
         }
         else
         {
+            product.CompanyId = CompanyId != Guid.Empty
+                ? CompanyId
+                : CompanyInfo.CurrentCompany?.Id ?? Guid.Empty;
             await Mediator.Send(new CreateProductCommand(product));
             SaveSnackBar();
         }
@@ -388,14 +366,20 @@ else
             product = await Mediator.Send(new GetProductByIdQuery(ProductId));
             productImageUrl = product?.ImageUrl ?? string.Empty;
 
-            
+
+          
             EnsureDictionariesInitialized(product);
+
+            if (product?.CompanyId != Guid.Empty && CompanyInfo.CurrentCompany != null)
+            {
+                selectedCompanyName = GetEn(CompanyInfo.CurrentCompany.CompanyManufacturerName);
+            }
         }
         else
         {
             var existingCompany = CompanyInfo.CurrentCompany?.CompanyManufacturerName;
             var existingAddress = CompanyInfo.CurrentCompany?.CompanyAddressInfo;
-
+            selectedCompanyName = GetEn(CompanyInfo.CurrentCompany.CompanyManufacturerName);
             var manufacturerDict = existingCompany is not null
                     ? new Dictionary<string, string>(existingCompany, StringComparer.OrdinalIgnoreCase)
                     : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -479,5 +463,64 @@ else
         );
 
         var result = await dialogRef.Result;
+    }
+
+    private string GetEn(Dictionary<string, string> dict)
+    {
+        if (dict == null || dict.Count == 0)
+            return "";
+
+        // Return English if available
+        if (dict.TryGetValue("en", out var enValue))
+            return enValue;
+
+        // fallback (display only)
+        return dict.Values.FirstOrDefault() ?? "";
+    }
+
+    private async Task OpenCompanySelectDialog()
+    {
+        var options = new DialogOptions
+            {
+                CloseButton = true,
+                FullWidth = true,
+                MaxWidth = MaxWidth.Large
+            };
+        var parameters = new DialogParameters();
+        var dialogRef = await DialogService.ShowAsync<CompanySelectionDialog>(
+                    "Select Manufacturer",
+                    parameters,
+                    options
+                        );
+
+        var result = await dialogRef.Result;
+
+        if (result.Canceled || result.Data is not CompanyDto chosen)
+            return;
+
+        selectedCompany = chosen;
+
+        // Display only English values
+        selectedCompanyName = GetEn(chosen.CompanyManufacturerName);
+        
+
+        // --------------------------------------
+        // ASSIGN MANUFACTURER VALUES TO PRODUCT
+        // --------------------------------------
+        product!.ManufacturerName = new(chosen.CompanyManufacturerName); // full multilingual set
+
+        product.AddressInfo = new AddressInfoDto
+            {
+                City = new(chosen.CompanyAddressInfo.City),
+                Country = new(chosen.CompanyAddressInfo.Country),
+                ZipCode = new(chosen.CompanyAddressInfo.ZipCode)
+            };
+
+        // --------------------------------------
+        // ASSIGN COMPANY ID (recommended)
+        // --------------------------------------
+        product.CompanyId = chosen.Id;
+
+        StateHasChanged();
     }
 }

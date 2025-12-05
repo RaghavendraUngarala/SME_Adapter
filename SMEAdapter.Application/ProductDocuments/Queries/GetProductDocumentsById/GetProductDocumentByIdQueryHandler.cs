@@ -1,9 +1,4 @@
 ﻿using SMEAdapter.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MediatR;
 using SMEAdapter.Application.DTOs;
 
@@ -22,40 +17,48 @@ namespace SMEAdapter.Application.ProductDocuments.Queries.GetProductDocumentsByI
 
         public async Task<ProductDocumentDto> Handle(GetProductDocumentByIdQuery request, CancellationToken cancellationToken)
         {
-            var entity = await _productDocumentRepository.GetByIdAsync(request.Id, cancellationToken);
-            if (entity == null)
-                return null;
-            var dto = new ProductDocumentDto
-            {
-                Id = entity.Id,
-                ProductId = entity.ProductId!,
-                FileName = entity.FileName,
-                ContentType = entity.ContentType,
-                Data = entity.Data,
+            var document = await _productDocumentRepository.GetByIdAsync(request.Id, cancellationToken);
 
-                // Version
-                Language = entity.Version?.Language,
-                Version = entity.Version?.Version,
-                Title = entity.Version?.Title,
-                Summary = entity.Version?.Summary,
-                Keywords = entity.Version?.Keywords,
-                State = entity.Version?.State,
-                StateDate = entity.Version?.StateDate,
-                OrganisationName = entity.Version?.OrganisationName,
-                OrganisationOfficialName = entity.Version?.OrganisationOfficialName,
+            if (document == null)
+                return null;
+            static Dictionary<string, string> ToDict(SMEAdapter.Domain.ValueObjects.LangStringSet lss) =>
+                lss.Items.ToDictionary(x => x.Language, x => x.Text, StringComparer.OrdinalIgnoreCase);
+            var productId =
+                    document.ProductId
+                    ?? document.DocumentAssignments.FirstOrDefault()?.ProductId;
+            return new ProductDocumentDto
+            {
+                Id = document.Id,
+                ProductId = productId!,
+                FileName = document.FileName,
+                ContentType = document.ContentType,
+                Data = document.Data,
+
+                // Version - Fix the ToDictionary calls
+                Language = document.Version?.Language,
+                Version = document.Version?.Version,
+                Title = ToDict(document.Version?.Title),
+                SubTitle = ToDict(document.Version?.SubTitle),
+                Description = ToDict(document.Version?.Description),
+                Keywords = ToDict(document.Version?.Keywords),
+                StatusValue = document.Version?.StatusValue,
+                StatusSetDate = document.Version?.StatusSetDate,
+                OrganisationName = document.Version?.OrganisationName,
+                OrganisationOfficialName = document.Version?.OrganisationOfficialName,
 
                 // Identifier
-                ValueId = entity.Identifier?.ValueId,
-                DomainId = entity.Identifier?.DomainId,
+                ValueId = document.Identifier?.ValueId,
+                DomainId = document.Identifier?.DomainId,
 
                 // Classification
-                ClassificationSystem = entity.Classification?.ClassificationSystem,
-                ClassName = entity.Classification?.ClassName?.ToDictionary(),
-                ClassLang = entity.Classification?.ClassLang,
-                ClassDescription = entity.Classification?.ClassDescription,
-                ClassId = entity.Classification?.ClassId
+                ClassificationSystem = document.Classification?.ClassificationSystem,
+                ClassName = ToDict(document.Classification?.ClassName),
+                ClassLang = document.Classification?.ClassLang,
+                ClassDescription = document.Classification?.ClassDescription,
+                ClassId = document.Classification?.ClassId,
+
+                OwnershipType = document.OwnershipType
             };
-            return dto;
         }
     }
 }

@@ -21,4 +21,3 @@ namespace SMEAdapter.Application
         }
     }
 }
-// This code defines a static class `DependencyInjection` in the `SMEAdapter.Application` namespace.

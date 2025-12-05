@@ -33,7 +33,7 @@ namespace SMEAdapter.Application.Products.Queries.GetProductById
                 ManufacturerName = ToDict(p.ManufacturerName),
                 SerialNumber = ToDict(p.SerialNumber),
                 ImageUrl = p.ImageUrl,
-
+                CompanyId = p.CompanyId,
                 ProductInfo = new ProductInfoDto
                 {
                     ProductDesignation = ToDict(p.ProductInfo.ProductDesignation),

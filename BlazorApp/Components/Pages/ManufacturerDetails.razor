@@ -1,0 +1,193 @@
+﻿@page "/manufacturerdetails"
+@inject IMediator Mediator
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+@inject SMEAdapter.Application.Services.CompanyInfoService CompanyInfo
+@inject IDialogService DialogService
+
+@using SMEAdapter.Application.DTOs
+@using SMEAdapter.Application.Companies.Queries.GetCompanyById
+@using SMEAdapter.Application.Companies.UpdateCompany
+@using SMEAdapter.Application.Companies.CreateCompanies
+@using SMEAdapter.Application.Companies.Queries.GetAllCompanies
+@using SMEAdapter.Application.Companies.DeleteCompanies
+<MudPaper Class="pa-6 ma-4" Elevation="2">
+
+    <MudText Typo="Typo.h4" GutterBottom="true">
+        🏢 Company Address Management
+    </MudText>
+
+    @if (isLoading)
+    {
+        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="mt-6">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            <MudText Typo="Typo.subtitle1" Class="mt-2">Loading companies...</MudText>
+        </MudStack>
+    }
+    else
+    {
+        <MudGrid GutterSize="3">
+
+            <!-- TILE 1 — CURRENT COMPANY -->
+            @foreach (var c in companies)
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Class="pa-4" Elevation="2" Style="border:1px solid lightgray; border-radius:10px;">
+
+                        <MudText Typo="Typo.h4" Class="mb-1">
+                           ManufacturerName: @GetEnglish(c.CompanyManufacturerName)
+                        </MudText>
+
+                        <MudText Typo="Typo.h5" Class="mb-2">
+                           City: @GetEnglish(c.CompanyAddressInfo.City),
+                         
+                        </MudText>
+                        <MudText Typo="Typo.h5"Class="mb-2">
+                            Country: @GetEnglish(c.CompanyAddressInfo.Country)
+                        </MudText>
+
+                        <MudDivider Class="my-2" />
+
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+
+                            <MudButton Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';" 
+                            Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="@(() => EditCompany(c))">
+                                Edit
+                            </MudButton>
+
+                            <MudButton Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';" 
+                                        Variant="Variant.Outlined"
+                                       Color="Color.Error"
+                                       OnClick="@(() => DeleteCompany(c))">
+                                Delete
+                            </MudButton>
+
+                        </MudStack>
+
+                    </MudPaper>
+                </MudItem>
+            }
+            <!-- TILE 2 — ADD NEW COMPANY -->
+            <MudItem xs="12" sm="3" md="3">
+                <MudPaper Class="pa-4" Elevation="4" Style="border:1px dashed gray; border-radius:10px;">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.AddBusiness"
+                                 Size="Size.Large"
+                                 Color="Color.Primary" />
+
+                        <MudText Typo="Typo.h4">Add New Company</MudText>
+
+                        <MudButton Variant="Variant.Outlined"
+                                   Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans';"
+                                   Color="Color.Secondary"
+                                   OnClick="@AddCompany">
+                            Add Company
+                        </MudButton>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudPaper>
+
+
+@code {
+    private List<CompanyDto> companies = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCompanies();
+        isLoading = false;
+    }
+
+    private async Task LoadCompanies()
+    {
+        companies = (await Mediator.Send(new GetAllCompaniesQuery())).ToList();
+    }
+
+    private string GetEnglish(Dictionary<string, string>? dict)
+        => (dict != null && dict.TryGetValue("en", out var val))
+            ? val
+            : dict?.Values.FirstOrDefault() ?? "";
+
+    // ===================================
+    // ADD COMPANY
+    // ===================================
+    private async Task AddCompany()
+    {
+        var options = new DialogOptions { CloseButton = false, FullWidth = false, MaxWidth = MaxWidth.Large};
+
+        var dialog = DialogService.Show<CompanyFormDialog>("New Company", options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is CompanyDto newCompany)
+        {
+            var newId = await Mediator.Send(new CreateCompanyCommand(newCompany));
+            newCompany.Id = newId;
+
+            CompanyInfo.SetCompany(newCompany);
+            Snackbar.Add("Company created successfully!", Severity.Success, config =>
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        });
+
+            await LoadCompanies();
+            StateHasChanged();
+        }
+    }
+
+    // ===================================
+    // EDIT COMPANY
+    // ===================================
+    private async Task EditCompany(CompanyDto c)
+    {
+        var parameters = new DialogParameters
+    {
+        { "ExistingCompany", c }
+    };
+
+        var options = new DialogOptions { CloseButton = true, FullWidth = false, MaxWidth = MaxWidth.Large};
+
+        var dialog = DialogService.Show<CompanyFormDialog>("Edit Company", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is CompanyDto updated)
+        {
+            await Mediator.Send(new UpdateCompanyCommand(updated));
+
+            CompanyInfo.SetCompany(updated);
+            Snackbar.Add("Company updated.", Severity.Success);
+
+            await LoadCompanies();
+        }
+    }
+
+    // ===================================
+    // DELETE COMPANY
+    // ===================================
+    private async Task DeleteCompany(CompanyDto c)
+    {
+        bool confirmed = await DialogService.ShowMessageBox(
+            "Confirm Delete",
+            $"Delete {GetEnglish(c.CompanyManufacturerName)}?",
+            yesText: "Delete",
+            cancelText: "Cancel") == true;
+
+        if (!confirmed) return;
+
+        await Mediator.Send(new DeleteCompanyCommand(c.Id));
+        Snackbar.Add("Company deleted.", Severity.Warning, config =>
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        });
+
+        if (CompanyInfo.CurrentCompany?.Id == c.Id)
+            CompanyInfo.CurrentCompany = null;
+
+        await LoadCompanies();
+    }
+}

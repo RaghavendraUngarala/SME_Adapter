@@ -20,11 +20,15 @@ namespace SMEAdapter.Infrastructure
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfiguration(new ProductConfiguration());
             modelBuilder.ApplyConfiguration(new ProductDocumentConfiguration());
+            modelBuilder.ApplyConfiguration(new ProductDocumentAssignmentConfiguration());
+            modelBuilder.ApplyConfiguration(new CompanyConfiguration());
+
         }
 
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductDocument> ProductDocuments { get; set; }
-
+        public DbSet<ProductDocumentAssignment> ProductDocumentAssignments { get; set; }
+        public DbSet<Company> Companies { get; set; }
 
     }
 

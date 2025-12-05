@@ -5,8 +5,9 @@
 
     @foreach (var row in Rows)
     {
-        <MudGrid Justify="Justify.Center">
-            <MudItem xs="12" sm="3">
+        <MudGrid >
+            <MudItem xs="12" sm="2">
+                <div style="width:180px">
                 <MudSelect T="string"
                            @bind-Value="row.Language"
                            Variant="Variant.Outlined"
@@ -19,13 +20,15 @@
                     @foreach (var opt in LanguageOptionsFilteredFor(row))
                     {
                         <MudSelectItem T="string" Value="@opt.Code">
-                            @opt.Display  &nbsp; &nbsp; (@opt.Code)
+                            @opt.Display  &nbsp; &nbsp; @opt.Code
                         </MudSelectItem>
                     }
                 </MudSelect>
+
+                </div>
             </MudItem>
 
-            <MudItem xs="12" sm="7">
+            <MudItem xs="12" sm="8">
                 <MudTextField T="string"
                               @bind-Value="row.Text"
                               Variant="Variant.Outlined"
@@ -48,11 +51,13 @@
             </MudItem>
 
             <MudItem xs="12" sm="1" Class="flex justify-end">
+                <MudTooltip Text = "Add Entry">
                 <MudIconButton Icon="@Icons.Material.Filled.Add"
                            Color="Color.Primary"
                            Variant="Variant.Text"
                            Disabled="@(Disabled || (MaxRows.HasValue && Rows.Count >= MaxRows))"
                            OnClick="@AddRow" />
+                </MudTooltip>
                    
             </MudItem>
         </MudGrid>
@@ -67,7 +72,7 @@
 </MudStack>
 
 @code {
-    
+
     [Parameter] public Dictionary<string,string>? Value { get; set; }
     [Parameter] public EventCallback<Dictionary<string,string>?> ValueChanged { get; set; }
 
@@ -102,20 +107,44 @@
 
     protected override void OnParametersSet()
     {
-        if (_initialized)
-            return;
+        // Always update the rows when Value changes, not just on first initialization
         var dict = Value ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        Rows = dict
-            .Select(kv => new Row { Language = kv.Key, Text = kv.Value })
-            .ToList();
+        // Convert current Rows to dictionary for comparison
+        var currentRowsDict = Rows
+            .Where(r => !string.IsNullOrWhiteSpace(r.Language))
+            .ToDictionary(r => r.Language!, r => r.Text ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
-        while (Rows.Count < MinRows)
-            Rows.Add(new Row { Language = SuggestNextLanguage(), Text = string.Empty });
+        // Only update if the incoming Value is different from current state
+        if (!AreDictionariesEqual(currentRowsDict, dict) || !_initialized)
+        {
+            Rows = dict
+                .Select(kv => new Row { Language = kv.Key, Text = kv.Value })
+                .ToList();
 
-        if (Rows.Count == 0)
-            Rows.Add(new Row { Language = SuggestNextLanguage(), Text = string.Empty });
-        _initialized = true;
+            while (Rows.Count < MinRows)
+                Rows.Add(new Row { Language = SuggestNextLanguage(), Text = string.Empty });
+
+            if (Rows.Count == 0)
+                Rows.Add(new Row { Language = SuggestNextLanguage(), Text = string.Empty });
+
+            _initialized = true;
+        }
+    }
+
+    // Helper method to compare dictionaries
+    private static bool AreDictionariesEqual(IDictionary<string, string> dict1, IDictionary<string, string> dict2)
+    {
+        if (dict1.Count != dict2.Count)
+            return false;
+
+        foreach (var kvp in dict1)
+        {
+            if (!dict2.TryGetValue(kvp.Key, out var value) || value != kvp.Value)
+                return false;
+        }
+
+        return true;
     }
 
     private void AddRow()
@@ -130,7 +159,7 @@
             Language = suggested,
             Text = string.Empty
         });
-        
+
     }
 
     private void RemoveRow(Row row)
@@ -176,6 +205,13 @@
 
     private IEnumerable<LangOpt> AllLanguageOptions()
     {
+        var top = new[] { "en", "de" };
+        var euro = new[]
+        {
+        "fr", "es", "it", "nl", "pl", "cs", "da", "sv", "no", "fi"
+        };
+        
+        
         IEnumerable<string> codes = AllowedLanguageCodes ?? CultureInfo
             .GetCultures(CultureTypes.NeutralCultures)
             .Select(c => c.TwoLetterISOLanguageName)
@@ -183,7 +219,15 @@
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(x => x);
 
-        foreach (var code in codes)
+        var sortedCodes = codes
+            .OrderBy(code =>
+                top.Contains(code) ? 0 :
+                euro.Contains(code) ? 1 : 2)
+            .ThenBy(code =>
+                code) // alphabetical inside group
+            .ToList();
+
+        foreach (var code in sortedCodes)
         {
             var culture = CultureInfo
                 .GetCultures(CultureTypes.NeutralCultures)

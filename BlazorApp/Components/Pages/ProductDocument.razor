@@ -9,9 +9,14 @@
 @inject IMediator Mediator;
 @using SMEAdapter.Application.DTOs;
 @using SMEAdapter.Application.ProductDocuments.AddProductDocuments;
-@using SMEAdapter.Application.ProductDocuments.Queries.GetProductDocuments;
+
 @using SMEAdapter.Application.ProductDocuments.Queries.GetProductDocumentsById;
+@using SMEAdapter.Application.ProductDocuments.Queries.GetAllDocuments;
 @using SMEAdapter.Application.ProductDocuments.DeleteProductDocuments;
+@using SMEAdapter.Application.ProductDocuments.SetSharedDocumentsForProduct;
+@using SMEAdapter.Domain.Entities
+@using static SMEAdapter.Domain.Entities.ProductDocument;
+
 
 @using BlazorApp.Components.ProductDocuments;
 
@@ -21,58 +26,142 @@
         <MudPaper Class="pa-4" Elevation="1">
             <MudStack Spacing="2">
                 <MudStack Row = "true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                    <MudText Typo="Typo.h5">Add your Documents here</MudText>
+                    
                     @if (!showAddForm)
                     {
-                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="ToggleAddForm">
-                            Add Document
-                        </MudButton>
+
+                        <MudText Typo="Typo.h4">Add your Documents here</MudText>
+                        <MudMenu>
+                            <ActivatorContent>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                                           Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px">
+                                    Add Document
+                                </MudButton>
+                            </ActivatorContent>
+                            <ChildContent>
+                                <MudMenuItem Label="Add a new document" OnClick="ToggleAddForm" />
+                                <MudMenuItem Label="Add from a list of shared documents" OnClick="@OpenSharedDocumentSelector" />
+                                
+                            </ChildContent>
+                        </MudMenu>
+                        
+                        
+                       
                     }
                 </MudStack>
 
                 @if (showAddForm)
                 {
+                    <MudText Typo="Typo.h4">Enter the document details</MudText>
                     <AddDocumentForm  @bind-FormValue= "showAddForm" ProductId="ProductId" OnSaved="HandleSaved" />
                 }
             </MudStack>
         </MudPaper>
     </MudItem>
 
+
+
+    
+
+
     <!-- Table -->
     <MudItem xs="12">
-        <MudPaper Class="pa-4 mt-2" Elevation="1">
+        
+        <MudPaper Class="pa-4 mt-2 gap-4" Elevation="1">
+
+            <MudText Typo="Typo.h4">List of Documents</MudText>
+            <MudDivider DividerType="DividerType.Middle" Class="my-6" />
             @if (!showAddForm)
             {
                 <!-- Table -->
-                <MudTable Items="@documents" MultiSelection="true" @bind-SelectedItems="selectedDocuments"
-                          Dense="true" Hover="true" Striped="true" Outlined="true" Bordered="true">
-                    <HeaderContent>
-                        <MudTh>S.No</MudTh>
-                        <MudTh>File Name</MudTh>
-                        <MudTh>Title</MudTh>
-                        <MudTh>Uploaded</MudTh>
-                        <MudTh>Edit Document</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="S.No">@(documents.IndexOf(context) + 1)</MudTd>
-                        <MudTd DataLabel="File Name">@context.FileName</MudTd>
-                        <MudTd Datalabel="Title">@context.Title</MudTd>
-                        <MudTd DataLabel="Uploaded">@context.StateDate?.ToShortDateString()</MudTd>
-                        <MudButton Icon="@Icons.Material.Filled.Edit"
-                                   Color="Color.Primary"
-                                   Size="Size.Small"
-                                   OnClick="() => EditDocument(context.Id)"> Edit Document
-                        </MudButton>
-                    </RowTemplate>
-                </MudTable>
+                
+                <MudDataGrid T="ProductDocumentDto"
+                                     Items="@documents"
+                                     Hover="true"
+                                     Striped="true"
+                                     Dense="true"
+                                     MultiSelection="true"
+                                     @bind-SelectedItems="selectedDocuments"
+                                     Filterable="true"
+                                     SortMode="SortMode.Multiple"
+                                     Bordered="true"
+                                     Elevation="1"
+                                     Class="pa-2;font-size: 18px ;font-weight: 600">
 
-                <MudItem xs="12" Class="mt-4">
-                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="GoBack">
+
+                        <Columns>
+
+                            <SelectColumn T="ProductDocumentDto"/>
+
+                            <!-- S.No -->
+                            <TemplateColumn Title="S.No" Sortable="false" Filterable="false" >
+                                        <CellTemplate>
+                                            @(documents.IndexOf(context.Item) + 1)
+                                        </CellTemplate>
+                                    </TemplateColumn>
+
+                                    <!-- File Name -->
+                                    <PropertyColumn  Property="@(d => d.FileName)" 
+                                                    Title="File Name" />
+
+
+                            <TemplateColumn Title="Document Ownership">
+                                <CellTemplate>
+                                    @{
+                                        var isOwned = context.Item.OwnershipType == DocumentOwnershipType.Owned;
+                                    }
+
+                                    <MudChip Color="@(isOwned? Color.Success: Color.Info)"
+                                                Variant="Variant.Outlined">
+                                        @(isOwned ? "Owned" : "Shared")
+                                    </MudChip>
+                                </CellTemplate>
+                            </TemplateColumn>
+
+                              
+
+
+                            <!-- Title (English only) -->
+                            <TemplateColumn Title="Title">
+                                <CellTemplate>
+                                    @GetLang(context.Item.Title)
+                                </CellTemplate>
+                            </TemplateColumn>
+
+                               
+
+
+                            <!-- Edit Document -->
+                            <TemplateColumn Title="Edit Document">
+                                <CellTemplate>
+                                    <MudButton Color="Color.Primary"
+                                                Size="Size.Small"
+                                                Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px"
+                                                OnClick="() => EditDocument(context.Item.Id)">
+                                        Edit Document
+                                    </MudButton>
+                                </CellTemplate>
+                            </TemplateColumn>
+
+
+
+                        </Columns>
+
+                 </MudDataGrid>
+
+                          
+
+                <MudItem xs="12" Class="mt-4 gap-4;">
+                    <MudButton Class="mt-4 pa-4" Variant="Variant.Outlined"
+                               Color="Color.Primary" 
+                             Style="font-size: 18px;  font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px" OnClick="GoBack">
                         Back to Products
                     </MudButton>
                     <MudButton Variant="Variant.Outlined"
+                               Class="mt-4 pa-4"
                                Color="Color.Error"
                                Disabled="@(!CanDelete)"
+                               Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px"
                                OnClick="DeleteSelectedDocuments">
                         <MudIcon Icon="@Icons.Material.Filled.Delete" />
                         Delete
@@ -122,13 +211,17 @@
 
     private async Task LoadDocuments()
     {
-        var docs = await Mediator.Send(new GetAllProductDocumentsQuery(ProductId));
+        var docs = await Mediator.Send(new GetAllDocumentsForProductQuery(ProductId));
 
-        documents = docs.ToList();   // assign the DTOs to your table source
+        documents = docs.ToList();   
 
         StateHasChanged();
     }
-
+    private string GetLang(Dictionary<string, string>? set, string lang = "en")
+    {
+        if (set == null) return "";
+        return set.TryGetValue(lang, out var value) ? value : "";
+    }
 
     private int rowNumber = 0;
 
@@ -151,15 +244,46 @@
         if (!confirmed)
             return;
 
-        var idsToDelete = selectedDocuments.Select(d => d.Id).ToList();
+        var documentIds = selectedDocuments.Select(d => d.Id).ToList();
       
-        await Mediator.Send(new DeleteProductDocumentCommand(idsToDelete));
+        await Mediator.Send(new DeleteProductDocumentCommand(ProductId, documentIds));
 
         await LoadDocuments();
         ShowDeleteSnackbar();
         selectedDocuments.Clear();
     }
+    private async Task OpenSharedDocumentSelector()
+    {
+        // open dialog to pick shared documents
+        var parameters = new DialogParameters
+    {
+        { "ProductId", ProductId }
+    };
 
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = DialogService.Show<SelectSharedDocumentsDialog>("Select Shared Documents", parameters, options);
+
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            var selectedSharedDocIds = (List<Guid>)result.Data;
+
+            await Mediator.Send(
+            new SetSharedDocumentsForProductCommand(ProductId, selectedSharedDocIds)
+        );
+
+            await LoadDocuments();
+            Snackbar.Add("Shared documents added.", Severity.Success);
+        }
+        
+    }
     private void ShowDeleteSnackbar()
     {
         Snackbar.Add("Selected documents have been deleted.", Severity.Info, config =>

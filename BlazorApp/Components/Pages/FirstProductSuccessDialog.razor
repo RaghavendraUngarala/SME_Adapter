@@ -1,26 +1,58 @@
 ﻿@inject NavigationManager NavManager
 @inject IDialogService DialogService
-<MudDialog>
-    <DialogContent>
-        <MudText Typo="Typo.h6" GutterBottom="true">
-            You have successfully added your first product!
-        </MudText>
+<MudDialog Style="padding: 0;">
 
-        <MudText Typo="Typo.body1">
-            View your product information here.
-        </MudText>
-        <MudButton Color="Color.Primary" OnClick="@ViewProducts">
-            View Products
-        </MudButton>
+    <!-- Header -->
+    <TitleContent>
+        <MudStack AlignItems="AlignItems.Center" Spacing="1">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle"
+                     Color="Color.Success"
+                     Size="Size.Large" />
+            <MudText Typo="Typo.h4" Class="mt-1">
+                Congratulations!
+            </MudText>
+        </MudStack>
+    </TitleContent>
+
+    <!-- Body -->
+    <DialogContent>
+        <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-4">
+
+            <MudText Typo="Typo.h6" Align="Align.Center">
+                🎉 You have successfully added your first product!
+            </MudText>
+
+            <MudPaper Elevation="0" Class="pa-2" Style="text-align:center;">
+                <MudText Typo="Typo.body1" Color="Color.Secondary">
+                    You can now continue building your product catalog.
+                </MudText>
+            </MudPaper>
+
+        </MudStack>
     </DialogContent>
 
-    <DialogActions>
-        <!-- Button 1: Navigate to products -->
-        
+    <!-- Actions -->
+    <DialogActions >
+        <div Class="justify-center pa-4">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="ViewProducts"
+                   Class="mx-2"
+                   StartIcon="@Icons.Material.Filled.Visibility"
+                   Style="min-width: 220px;">
+            View Products
+        </MudButton>
 
-        <!-- Button 2: Just close the dialog -->
-        <MudButton OnClick="CloseDialog">Close</MudButton>
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   OnClick="CloseDialog"
+                   Class="mx-2"
+                   Style="min-width: 150px;">
+            Close
+        </MudButton>
+        </div>
     </DialogActions>
+    
 </MudDialog>
 
 @code {
@@ -39,6 +71,7 @@
     private void CloseDialog()
     {
         MudDialog.Cancel(); // just closes without action
+        NavManager.NavigateTo("/viewproducts");
     }
 }
 

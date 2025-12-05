@@ -1,0 +1,61 @@
+﻿@inject IMediator Mediator
+@inject IDialogService DialogService
+@using SMEAdapter.Application.Companies.Queries.GetAllCompanies
+@using SMEAdapter.Application.DTOs
+
+<MudDialog>
+    <TitleContent>Select Manufacturer</TitleContent>
+
+    <DialogContent>
+
+        <MudList T="String"Dense="true">
+            @foreach (var company in companies)
+            {
+                <MudListItem Class="pa-3" Style="cursor:pointer"
+                             OnClick="@(() => Select(company))">
+
+                    <MudText Typo="Typo.subtitle1">@company.CompanyManufacturerName.First().Value</MudText>
+                    <MudText Typo="Typo.caption" class="text-muted">
+                        @GetEn(company.CompanyAddressInfo.City),
+                        @GetEn(company.CompanyAddressInfo.Country)
+                    </MudText>
+
+                </MudListItem>
+
+                <MudDivider />
+            }
+        </MudList>
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel" Color="Color.Secondary">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance Dialog { get; set; } = default!;
+
+    private List<CompanyDto> companies = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        companies = (await Mediator.Send(new GetAllCompaniesQuery())).ToList();
+    }
+
+    private void Select(CompanyDto company)
+    {
+        Dialog.Close(DialogResult.Ok(company));
+    }
+
+    private void Cancel()
+    {
+        Dialog.Cancel();
+    }
+
+    private string GetEn(Dictionary<string, string> dict)
+    {
+        if (dict.TryGetValue("en", out var en)) return en;
+        return dict.Values.FirstOrDefault() ?? "";
+    }
+}

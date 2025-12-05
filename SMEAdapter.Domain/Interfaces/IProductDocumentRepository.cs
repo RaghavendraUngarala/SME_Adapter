@@ -20,5 +20,17 @@ namespace SMEAdapter.Domain.Interfaces
         Task<ProductDocument?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
         Task UpdateAsync(ProductDocument document, CancellationToken cancellationToken);
+        Task<IReadOnlyList<ProductDocument>> GetAllSharedAsync(CancellationToken ct = default);
+        Task<IReadOnlyList<ProductDocument>> GetSharedForProductAsync(Guid productId, CancellationToken ct = default);
+        
+
+        Task AddAssignmentAsync(Guid productId, Guid documentId, CancellationToken cancellationToken);
+        Task RemoveAssignmentAsync(Guid productId, Guid documentId, CancellationToken cancellationToken);
+        Task<bool> AssignmentExistsAsync(Guid productId, Guid documentId, CancellationToken cancellationToken);
+        Task RemoveAllAssignmentsForDocumentAsync(Guid documentId, CancellationToken cancellationToken);
+
+        Task AddSharedDocumentsForProductAsync(Guid productId, IEnumerable<Guid> documentIds, CancellationToken ct);
+
     }
+
 }

@@ -1,0 +1,59 @@
+﻿@using SMEAdapter.Application.ProductDocuments.Queries.GetAllSharedDocuments
+@inject IMediator Mediator
+@inject IDialogService DialogService
+@using SMEAdapter.Application.DTOs
+
+<MudDialog>
+    <DialogContent>
+        
+        <MudDivider Class="my-3" />
+
+        <MudDataGrid T="ProductDocumentDto"
+                     Items="@sharedDocuments"
+                     MultiSelection="true"
+                     @bind-SelectedItems="selected">
+            <Columns>
+                <SelectColumn T="ProductDocumentDto" />
+
+                <PropertyColumn Property="d => d.FileName" Title="File Name" />
+                <TemplateColumn Title="Title">
+                    <CellTemplate>
+                        @GetLang(context.Item.Title)
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit">Add Selected</MudButton>
+        <MudButton OnClick="@Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    
+    [Parameter] public Guid ProductId { get; set; }
+    private List<ProductDocumentDto> sharedDocuments = new();
+    private HashSet<ProductDocumentDto> selected = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        sharedDocuments = (await Mediator.Send(new GetAllSharedDocumentsQuery())).ToList();
+    }
+
+    private void Submit()
+    {
+        MudDialog.Close(DialogResult.Ok(selected.Select(x => x.Id).ToList()));
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private string GetLang(Dictionary<string, string>? set, string lang = "en") =>
+        set?.TryGetValue(lang, out var v) == true ? v : "";
+}

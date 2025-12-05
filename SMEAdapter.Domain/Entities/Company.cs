@@ -25,7 +25,14 @@ namespace SMEAdapter.Domain.Entities
             CompanyAddressInfo = address;
             CompanyImageUrl = imageUrl;
         }
+        public void ReplaceCompanyManufacturerName(LangStringSet value)
+            => CompanyManufacturerName = value ?? new LangStringSet(null);
 
+        public void ReplaceAddress(CompanyAddressInfo value)
+            => CompanyAddressInfo = value ?? new CompanyAddressInfo();
+
+        public void SetImageUrl(string? url)
+            => CompanyImageUrl = url;
 
     }
     public class CompanyAddressInfo
@@ -38,6 +45,13 @@ namespace SMEAdapter.Domain.Entities
         public CompanyAddressInfo(LangStringSet zip, LangStringSet city, LangStringSet country)
         {
             ZipCode = zip; City = city; Country = country;
+        }
+
+        public void Update(LangStringSet zip, LangStringSet city, LangStringSet country)
+        {
+            ZipCode = zip ?? new LangStringSet(null);
+            City = city ?? new LangStringSet(null);
+            Country = country ?? new LangStringSet(null);
         }
     }
 }
