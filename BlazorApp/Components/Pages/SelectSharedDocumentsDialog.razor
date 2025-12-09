@@ -3,50 +3,233 @@
 @inject IDialogService DialogService
 @using SMEAdapter.Application.DTOs
 
-<MudDialog>
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    .document-dialog {
+        font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .document-dialog-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .header-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .header-subtitle {
+        font-size: 1rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .documents-grid {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+
+    .selection-info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        border: 1px solid #90caf9;
+    }
+
+    .selection-text {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0d47a1;
+    }
+
+    .file-name-text {
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: #212529;
+    }
+
+    .title-text {
+        font-size: 0.9375rem;
+        color: #495057;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem !important;
+        color: #dee2e6;
+    }
+
+    .empty-state-text {
+        font-size: 1.125rem;
+        color: #adb5bd;
+        font-weight: 500;
+    }
+
+    .action-button-primary {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 12px 28px;
+        border-radius: 10px;
+        text-transform: none;
+        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+        transition: all 0.3s ease;
+    }
+
+        .action-button-primary:hover:not(:disabled) {
+            box-shadow: 0 4px 16px rgba(33, 150, 243, 0.3);
+            transform: translateY(-1px);
+        }
+
+    .action-button-secondary {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 12px 24px;
+        text-transform: none;
+        color: #6c757d;
+    }
+
+    .grid-header {
+        background: #f8f9fa;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #495057;
+    }
+</style>
+
+<MudDialog MaxWidth="MaxWidth.Large" FullWidth="true" Class="document-dialog">
+    <TitleContent>
+        <MudPaper Class="document-dialog-header" Elevation="0">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="1">
+                    <MudText Class="header-title">
+                        Shared Documents Library
+                    </MudText>
+                    <MudText Class="header-subtitle">
+                        Select one or more documents to add to your product
+                    </MudText>
+                </MudStack>
+                <MudAvatar Size="Size.Large"
+                           Style="width: 64px; height: 64px; background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);">
+                    <MudIcon Icon="@Icons.Material.Filled.FolderShared"
+                             Style="font-size: 2rem; color: #495057;" />
+                </MudAvatar>
+            </MudStack>
+        </MudPaper>
+    </TitleContent>
+
     <DialogContent>
-        
-        <MudDivider Class="my-3" />
+        <MudStack Spacing="3">
+            @if (selectedDocuments.Count > 0)
+            {
+                <MudPaper Class="selection-info" Elevation="0">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline"
+                                 Style="color: #1976d2; font-size: 1.5rem;" />
+                        <MudText Class="selection-text">
+                            @selectedDocuments.Count document@(selectedDocuments.Count != 1 ? "s" : "") selected
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            }
 
-        <MudDataGrid T="ProductDocumentDto"
-                     Items="@sharedDocuments"
-                     MultiSelection="true"
-                     @bind-SelectedItems="selected">
-            <Columns>
-                <SelectColumn T="ProductDocumentDto" />
-
-                <PropertyColumn Property="d => d.FileName" Title="File Name" />
-                <TemplateColumn Title="Title">
-                    <CellTemplate>
-                        @GetLang(context.Item.Title)
-                    </CellTemplate>
-                </TemplateColumn>
-            </Columns>
-        </MudDataGrid>
+            <MudDataGrid T="ProductDocumentDto"
+                         Items="@sharedDocuments"
+                         MultiSelection="true"
+                         @bind-SelectedItems="selectedDocuments"
+                         Class="documents-grid"
+                         Hover="true"
+                         Height="450px"
+                         FixedHeader="true"
+                         RowsPerPage="10">
+                <Columns>
+                    <SelectColumn T="ProductDocumentDto" />
+                    <PropertyColumn Property="d => d.FileName" Title="File Name">
+                        <CellTemplate>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Description"
+                                         Size="Size.Medium"
+                                         Style="color: #6c757d;" />
+                                <MudText Class="file-name-text">
+                                    @context.Item.FileName
+                                </MudText>
+                            </MudStack>
+                        </CellTemplate>
+                    </PropertyColumn>
+                    <TemplateColumn Title="Title">
+                        <CellTemplate>
+                            <MudText Class="title-text">
+                                @(string.IsNullOrWhiteSpace(GetLang(context.Item.Title)) ? "-" : GetLang(context.Item.Title))
+                            </MudText>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-12">
+                        <MudIcon Icon="@Icons.Material.Filled.FolderOpen"
+                                 Class="empty-state-icon" />
+                        <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                            <MudText Class="empty-state-text">
+                                No shared documents available
+                            </MudText>
+                            <MudText Typo="Typo.body2" Style="color: #adb5bd;">
+                                Documents will appear here once they are shared
+                            </MudText>
+                        </MudStack>
+                    </MudStack>
+                </NoRecordsContent>
+            </MudDataGrid>
+        </MudStack>
     </DialogContent>
 
     <DialogActions>
-        <MudButton Color="Color.Primary" OnClick="Submit">Add Selected</MudButton>
-        <MudButton OnClick="@Cancel">Cancel</MudButton>
+        <MudStack Row="true" Spacing="3" Style="padding: 1rem; width: 100%;" Justify="Justify.FlexEnd">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="Submit"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Disabled="@(selectedDocuments.Count == 0)"
+                       Class="action-button-primary">
+                Add Selected (@selectedDocuments.Count)
+            </MudButton>
+            <MudButton Variant="Variant.Text"
+                       OnClick="@Cancel"
+                       Class="action-button-secondary">
+                Cancel
+            </MudButton>
+        </MudStack>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
 
-    
     [Parameter] public Guid ProductId { get; set; }
+
     private List<ProductDocumentDto> sharedDocuments = new();
-    private HashSet<ProductDocumentDto> selected = new();
+    private HashSet<ProductDocumentDto> selectedDocuments = new();
 
     protected override async Task OnInitializedAsync()
     {
-        sharedDocuments = (await Mediator.Send(new GetAllSharedDocumentsQuery())).ToList();
+        var result = await Mediator.Send(new GetAllSharedDocumentsQuery());
+        sharedDocuments = result
+            .GroupBy(d => d.FileName.ToLower())
+            .Select(g => g.First())
+            .ToList();
     }
 
     private void Submit()
     {
-        MudDialog.Close(DialogResult.Ok(selected.Select(x => x.Id).ToList()));
+        MudDialog.Close(DialogResult.Ok(selectedDocuments.Select(x => x.Id).ToList()));
     }
 
     private void Cancel()

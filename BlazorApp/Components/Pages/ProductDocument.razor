@@ -1,7 +1,5 @@
 ﻿@page "/productdocument/{productId:guid}"
 
-
-
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigate;
@@ -9,187 +7,444 @@
 @inject IMediator Mediator;
 @using SMEAdapter.Application.DTOs;
 @using SMEAdapter.Application.ProductDocuments.AddProductDocuments;
-
 @using SMEAdapter.Application.ProductDocuments.Queries.GetProductDocumentsById;
 @using SMEAdapter.Application.ProductDocuments.Queries.GetAllDocuments;
 @using SMEAdapter.Application.ProductDocuments.DeleteProductDocuments;
 @using SMEAdapter.Application.ProductDocuments.SetSharedDocumentsForProduct;
 @using SMEAdapter.Domain.Entities
 @using static SMEAdapter.Domain.Entities.ProductDocument;
-
-
 @using BlazorApp.Components.ProductDocuments;
 
-<MudGrid Class="pa-2" Spacing="3">
-    <!-- Header + Add Form -->
-    <MudItem xs="12">
-        <MudPaper Class="pa-4" Elevation="1">
-            <MudStack Spacing="2">
-                <MudStack Row = "true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+    
+    .document-page {
+        font-family: 'Poppins', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .page-title {
+        font-weight: 800;
+        font-size: 2.75rem;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        font-weight: 500;
+        font-size: 1.25rem;
+        letter-spacing: -0.01em;
+    }
+
+    .stat-label {
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .stat-number {
+        font-weight: 800;
+        font-size: 3.5rem;
+        line-height: 1;
+        letter-spacing: -0.03em;
+    }
+
+    .section-title {
+        font-weight: 800;
+        font-size: 2rem;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+    }
+    
+    .table-header-text {
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: -0.01em;
+    }
+
+    .body-text {
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+
+    .body-text-large {
+        font-weight: 500;
+        font-size: 1.25rem;
+    }
+
+    .btn-text {
+        font-weight: 600;
+        font-size: 1.05rem;
+        letter-spacing: 0.01em;
+    }
+
+    .document-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .stat-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    
+    /* MudBlazor DataGrid Header Styling */
+    ::deep .mud-table-head {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    ::deep .mud-table-head .mud-table-cell {
+        font-weight: 700;
+        font-size: 1.05rem;
+        padding: 20px 16px;
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="document-page py-6 px-6" Style="max-width: 100%;">
+    
+    <!-- Page Header -->
+    <MudPaper Class="pa-6 mb-4" Elevation="3">
+        <MudStack Spacing="2">
+            <MudText Class="page-title">
+                <MudIcon Icon="@Icons.Material.Filled.Description" Class="mr-3" Size="Size.Large" />
+                Document Management
+            </MudText>
+            <MudText Class="page-subtitle" Color="Color.Secondary">
+                Upload, organize, and manage your documents
+            </MudText>
+        </MudStack>
+    </MudPaper>
+
+    <!-- Stats Cards -->
+    @if (!showAddForm)
+    {
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="stat-card pa-6" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudStack Spacing="2">
+                            <MudText Class="stat-label" Color="Color.Secondary">TOTAL DOCUMENTS</MudText>
+                            <MudText Class="stat-number" Color="Color.Primary">@documents.Count</MudText>
+                        </MudStack>
+                        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Primary" Style="font-size: 3.5rem; opacity: 0.3;" />
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="stat-card pa-6" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudStack Spacing="2">
+                            <MudText Class="stat-label" Color="Color.Secondary">OWNED DOCUMENTS</MudText>
+                            <MudText Class="stat-number" Color="Color.Success">@documents.Count(d => d.OwnershipType == DocumentOwnershipType.Owned)</MudText>
+                        </MudStack>
+                        <MudIcon Icon="@Icons.Material.Filled.PersonOutline" Size="Size.Large" Color="Color.Success" Style="font-size: 3.5rem; opacity: 0.3;" />
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="stat-card pa-6" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudStack Spacing="2">
+                            <MudText Class="stat-label" Color="Color.Secondary">SHARED DOCUMENTS</MudText>
+                            <MudText Class="stat-number" Color="Color.Info">@documents.Count(d => d.OwnershipType == DocumentOwnershipType.Shared)</MudText>
+                        </MudStack>
+                        <MudIcon Icon="@Icons.Material.Filled.Share" Size="Size.Large" Color="Color.Info" Style="font-size: 3.5rem; opacity: 0.3;" />
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+
+    <!-- Toolbar Section -->
+    @if (!showAddForm)
+    {
+        <MudPaper Class="pa-5 mb-4" Elevation="2">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Spacing="3">
+                
+                <!-- Search Box -->
+                <MudTextField @bind-Value="searchString" 
+                              Placeholder="Search documents by name or title..." 
+                              Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" 
+                              IconSize="Size.Medium" 
+                              Class="flex-grow-1"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+                
+                <!-- Action Buttons -->
+                <MudStack Row="true" Spacing="2">
+                    <MudMenu StartIcon="@Icons.Material.Filled.Add"
+                             EndIcon="@Icons.Material.Filled.KeyboardArrowDown"
+                             Variant="Variant.Filled"
+                             Color="Color.Primary"
+                             Size="Size.Large">
+                        <ActivatorContent>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       EndIcon="@Icons.Material.Filled.KeyboardArrowDown"
+                                       Size="Size.Large"
+                                       Class="btn-text">
+                                Add Document
+                            </MudButton>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <MudMenuItem Icon="@Icons.Material.Filled.UploadFile" 
+                                         OnClick="ToggleAddForm">
+                                Add New Document
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Folder" 
+                                         OnClick="@OpenSharedDocumentSelector">
+                                Add from Shared Documents
+                            </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
                     
-                    @if (!showAddForm)
-                    {
-
-                        <MudText Typo="Typo.h4">Add your Documents here</MudText>
-                        <MudMenu>
-                            <ActivatorContent>
-                                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
-                                           Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px">
-                                    Add Document
-                                </MudButton>
-                            </ActivatorContent>
-                            <ChildContent>
-                                <MudMenuItem Label="Add a new document" OnClick="ToggleAddForm" />
-                                <MudMenuItem Label="Add from a list of shared documents" OnClick="@OpenSharedDocumentSelector" />
-                                
-                            </ChildContent>
-                        </MudMenu>
-                        
-                        
-                       
-                    }
+                    <MudTooltip Text="Export Documents">
+                        <MudIconButton Icon="@Icons.Material.Filled.FileDownload" 
+                                       Variant="Variant.Outlined" 
+                                       Color="Color.Default"
+                                       Size="Size.Large" />
+                    </MudTooltip>
                 </MudStack>
-
-                @if (showAddForm)
-                {
-                    <MudText Typo="Typo.h4">Enter the document details</MudText>
-                    <AddDocumentForm  @bind-FormValue= "showAddForm" ProductId="ProductId" OnSaved="HandleSaved" />
-                }
             </MudStack>
         </MudPaper>
-    </MudItem>
+    }
 
-
-
-    
-
-
-    <!-- Table -->
-    <MudItem xs="12">
-        
-        <MudPaper Class="pa-4 mt-2 gap-4" Elevation="1">
-
-            <MudText Typo="Typo.h4">List of Documents</MudText>
-            <MudDivider DividerType="DividerType.Middle" Class="my-6" />
-            @if (!showAddForm)
-            {
-                <!-- Table -->
+    <!-- Add Document Form -->
+    @if (showAddForm)
+    {
+        <MudPaper Class="pa-6 mb-4" Elevation="3">
+            <MudStack Spacing="3">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Class="section-title" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" Size="Size.Large" />
+                        Add New Document
+                    </MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                                   OnClick="ToggleAddForm" 
+                                   Size="Size.Large"
+                                   Color="Color.Default" />
+                </MudStack>
                 
+                <MudDivider />
+                
+                <AddDocumentForm @bind-FormValue="showAddForm" 
+                                 ProductId="ProductId" 
+                                 OnSaved="HandleSaved" />
+            </MudStack>
+        </MudPaper>
+    }
+
+    <!-- Documents Table -->
+    @if (!showAddForm)
+    {
+        <MudPaper Class="pa-6" Elevation="3">
+            
+            <!-- Table Header -->
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                <MudText Class="section-title">
+                    <MudIcon Icon="@Icons.Material.Filled.List" Class="mr-2" Size="Size.Large" />
+                    Documents List
+                </MudText>
+                
+                @if (selectedDocuments?.Any() == true)
+                {
+                    <MudChip T= "int" Color="Color.Info" 
+                             Icon="@Icons.Material.Filled.CheckCircle"
+                             Size="Size.Large"
+                             Style="font-weight: 600;">
+                        @selectedDocuments.Count Selected
+                    </MudChip>
+                }
+            </MudStack>
+
+            <MudDivider Class="mb-6" />
+
+            <!-- Empty State -->
+            @if (!documents.Any())
+            {
+                <MudPaper Class="pa-12 text-center" Elevation="0">
+                    <MudIcon Icon="@Icons.Material.Outlined.Description" 
+                             Color="Color.Secondary"
+                             Style="font-size: 5rem; opacity: 0.3;" />
+                    <MudText Class="section-title mt-4 mb-2">No Documents Yet</MudText>
+                    <MudText Class="body-text-large mb-6" Color="Color.Secondary">
+                        Get started by uploading your first document or adding from shared documents
+                    </MudText>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="ToggleAddForm"
+                               Size="Size.Large"
+                               Class="btn-text">
+                        Upload Document
+                    </MudButton>
+                </MudPaper>
+            }
+            else
+            {
+                <!-- Data Grid -->
                 <MudDataGrid T="ProductDocumentDto"
-                                     Items="@documents"
-                                     Hover="true"
-                                     Striped="true"
-                                     Dense="true"
-                                     MultiSelection="true"
-                                     @bind-SelectedItems="selectedDocuments"
-                                     Filterable="true"
-                                     SortMode="SortMode.Multiple"
-                                     Bordered="true"
-                                     Elevation="1"
-                                     Class="pa-2;font-size: 18px ;font-weight: 600">
+                             Items="@FilteredDocuments"
+                             Hover="true"
+                             Dense="false"
+                             MultiSelection="true"
+                             @bind-SelectedItems="selectedDocuments"
+                             Filterable="false"
+                             SortMode="SortMode.Multiple"
+                             Bordered="false"
+                             Elevation="0">
 
+                    <Columns>
+                        <SelectColumn T="ProductDocumentDto" />
 
-                        <Columns>
+                        <!-- S.No -->
+                        <TemplateColumn Title="No." Sortable="false" Filterable="false">
+                            <HeaderTemplate>
+                                <MudText Class="table-header-text">No.</MudText>
+                            </HeaderTemplate>
+                            <CellTemplate>
+                                <MudText Class="body-text">
+                                    @(documents.IndexOf(context.Item) + 1)
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
 
-                            <SelectColumn T="ProductDocumentDto"/>
+                        <!-- File Name with Icon -->
+                        <TemplateColumn Title="Document Name" Sortable="true">
+                            <HeaderTemplate>
+                                <MudText Class="table-header-text">Document Name</MudText>
+                            </HeaderTemplate>
+                            <CellTemplate>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                                    <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large">
+                                        <MudIcon Icon="@Icons.Material.Filled.Description" />
+                                    </MudAvatar>
+                                    <MudText Class="document-name">@context.Item.FileName</MudText>
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
 
-                            <!-- S.No -->
-                            <TemplateColumn Title="S.No" Sortable="false" Filterable="false" >
-                                        <CellTemplate>
-                                            @(documents.IndexOf(context.Item) + 1)
-                                        </CellTemplate>
-                                    </TemplateColumn>
+                        <!-- Ownership -->
+                        <TemplateColumn Title="Ownership">
+                            <HeaderTemplate>
+                                <MudText Class="table-header-text">Ownership</MudText>
+                            </HeaderTemplate>
+                            <CellTemplate>
+                                @{
+                                    var isOwned = context.Item.OwnershipType == DocumentOwnershipType.Owned;
+                                }
+                                <MudChip Color="@(isOwned ? Color.Success : Color.Info)"
+                                         Size="Size.Medium"
+                                         Icon="@(isOwned ? Icons.Material.Filled.Person : Icons.Material.Filled.Share)"
+                                         Style="font-weight: 600; font-size: 0.95rem;">
+                                    @(isOwned ? "Owned" : "Shared")
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
 
-                                    <!-- File Name -->
-                                    <PropertyColumn  Property="@(d => d.FileName)" 
-                                                    Title="File Name" />
+                        <!-- Title -->
+                        <TemplateColumn Title="Title">
+                            <HeaderTemplate>
+                                <MudText Class="table-header-text">Title</MudText>
+                            </HeaderTemplate>
+                            <CellTemplate>
+                                <MudText Class="body-text">
+                                    @(string.IsNullOrEmpty(GetLang(context.Item.Title)) ? "-" : GetLang(context.Item.Title))
+                                </MudText>
+                            </CellTemplate>
+                        </TemplateColumn>
 
+                        <!-- Actions -->
+                        <TemplateColumn Title="Actions" Sortable="false">
+                            <HeaderTemplate>
+                                <MudText Class="table-header-text">Actions</MudText>
+                            </HeaderTemplate>
+                            <CellTemplate>
+                                <MudStack Row="true" Spacing="1">
+                                    <MudTooltip Text="Edit Document">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Size="Size.Medium"
+                                                       Color="Color.Primary"
+                                                       OnClick="() => EditDocument(context.Item.Id)" />
+                                    </MudTooltip>
+                                    
+                                    <MudTooltip Text="Download">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Download"
+                                                       Size="Size.Medium"
+                                                       Color="Color.Default" />
+                                    </MudTooltip>
+                                    
+                                    <MudTooltip Text="More Options">
+                                        <MudIconButton Icon="@Icons.Material.Filled.MoreVert"
+                                                       Size="Size.Medium"
+                                                       Color="Color.Default" />
+                                    </MudTooltip>
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
 
-                            <TemplateColumn Title="Document Ownership">
-                                <CellTemplate>
-                                    @{
-                                        var isOwned = context.Item.OwnershipType == DocumentOwnershipType.Owned;
-                                    }
-
-                                    <MudChip Color="@(isOwned? Color.Success: Color.Info)"
-                                                Variant="Variant.Outlined">
-                                        @(isOwned ? "Owned" : "Shared")
-                                    </MudChip>
-                                </CellTemplate>
-                            </TemplateColumn>
-
-                              
-
-
-                            <!-- Title (English only) -->
-                            <TemplateColumn Title="Title">
-                                <CellTemplate>
-                                    @GetLang(context.Item.Title)
-                                </CellTemplate>
-                            </TemplateColumn>
-
-                               
-
-
-                            <!-- Edit Document -->
-                            <TemplateColumn Title="Edit Document">
-                                <CellTemplate>
-                                    <MudButton Color="Color.Primary"
-                                                Size="Size.Small"
-                                                Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px"
-                                                OnClick="() => EditDocument(context.Item.Id)">
-                                        Edit Document
-                                    </MudButton>
-                                </CellTemplate>
-                            </TemplateColumn>
-
-
-
-                        </Columns>
-
-                 </MudDataGrid>
-
-                          
-
-                <MudItem xs="12" Class="mt-4 gap-4;">
-                    <MudButton Class="mt-4 pa-4" Variant="Variant.Outlined"
-                               Color="Color.Primary" 
-                             Style="font-size: 18px;  font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px" OnClick="GoBack">
+                <!-- Bottom Actions -->
+                <MudStack Row="true" Spacing="3" Class="mt-8">
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.ArrowBack"
+                               Size="Size.Large"
+                               OnClick="GoBack"
+                               Class="btn-text">
                         Back to Products
                     </MudButton>
-                    <MudButton Variant="Variant.Outlined"
-                               Class="mt-4 pa-4"
+                    
+                    <MudButton Variant="Variant.Filled"
                                Color="Color.Error"
                                Disabled="@(!CanDelete)"
-                               Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 300px; height :60px"
-                               OnClick="DeleteSelectedDocuments">
-                        <MudIcon Icon="@Icons.Material.Filled.Delete" />
-                        Delete
+                               StartIcon="@Icons.Material.Filled.Delete"
+                               Size="Size.Large"
+                               OnClick="DeleteSelectedDocuments"
+                               Class="btn-text">
+                        Delete Selected (@selectedDocuments.Count)
                     </MudButton>
-                    
-                </MudItem>
+                </MudStack>
             }
-
         </MudPaper>
-    </MudItem>
+    }
 
-</MudGrid>
-
-
-
-
+</MudContainer>
 
 @code {
-
     [Parameter]
     public Guid ProductId { get; set; }
 
     private List<ProductDocumentDto> documents = new();
     private HashSet<ProductDocumentDto> selectedDocuments = new();
-
+    private string searchString = "";
     private bool showAddForm = false;
 
     private bool CanDelete => selectedDocuments?.Any() == true;
+
+    private IEnumerable<ProductDocumentDto> FilteredDocuments
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return documents;
+
+            return documents.Where(d => 
+                d.FileName.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                GetLang(d.Title).Contains(searchString, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+    }
 
     private void ToggleAddForm()
     {
@@ -200,9 +455,8 @@
     {
         await LoadDocuments();
         showAddForm = false;
+        Snackbar.Add("Document added successfully!", Severity.Success);
     }
-
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -212,18 +466,15 @@
     private async Task LoadDocuments()
     {
         var docs = await Mediator.Send(new GetAllDocumentsForProductQuery(ProductId));
-
-        documents = docs.ToList();   
-
+        documents = docs.ToList();
         StateHasChanged();
     }
+
     private string GetLang(Dictionary<string, string>? set, string lang = "en")
     {
         if (set == null) return "";
         return set.TryGetValue(lang, out var value) ? value : "";
     }
-
-    private int rowNumber = 0;
 
     private void GoBack()
     {
@@ -245,52 +496,39 @@
             return;
 
         var documentIds = selectedDocuments.Select(d => d.Id).ToList();
-      
         await Mediator.Send(new DeleteProductDocumentCommand(ProductId, documentIds));
-
         await LoadDocuments();
-        ShowDeleteSnackbar();
+        
+        Snackbar.Add($"{selectedDocuments.Count} documents deleted successfully", Severity.Success);
         selectedDocuments.Clear();
     }
+
     private async Task OpenSharedDocumentSelector()
     {
-        // open dialog to pick shared documents
         var parameters = new DialogParameters
-    {
-        { "ProductId", ProductId }
-    };
+        {
+            { "ProductId", ProductId }
+        };
 
         var options = new DialogOptions
         {
-            MaxWidth = MaxWidth.Medium,
+            MaxWidth = MaxWidth.Large,
             FullWidth = true,
             CloseButton = true
         };
 
         var dialog = DialogService.Show<SelectSharedDocumentsDialog>("Select Shared Documents", parameters, options);
-
         var result = await dialog.Result;
 
         if (!result.Canceled)
         {
             var selectedSharedDocIds = (List<Guid>)result.Data;
-
-            await Mediator.Send(
-            new SetSharedDocumentsForProductCommand(ProductId, selectedSharedDocIds)
-        );
-
+            await Mediator.Send(new SetSharedDocumentsForProductCommand(ProductId, selectedSharedDocIds));
             await LoadDocuments();
-            Snackbar.Add("Shared documents added.", Severity.Success);
+            Snackbar.Add("Shared documents added successfully!", Severity.Success);
         }
-        
     }
-    private void ShowDeleteSnackbar()
-    {
-        Snackbar.Add("Selected documents have been deleted.", Severity.Info, config =>
-        {
-            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
-        });
-    }
+
     private void EditDocument(Guid documentId)
     {
         Navigate.NavigateTo($"/productdocument/edit/{ProductId}/{documentId}");

@@ -1,0 +1,385 @@
+﻿@page "/productdocumentassociation"
+@using MediatR
+@using SMEAdapter.Application.DTOs
+@using SMEAdapter.Application.ProductDocuments.ProductDocumentAssignmentQueries.GetAllProductDocumentAssignments
+@inject IMediator Mediator
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+    .association-page {
+        font-family: 'Poppins', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .page-title {
+        font-weight: 800;
+        font-size: 2.75rem;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        font-weight: 500;
+        font-size: 1.25rem;
+        letter-spacing: -0.01em;
+    }
+
+    .stat-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+    .stat-label {
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .stat-number {
+        font-weight: 800;
+        font-size: 3.5rem;
+        line-height: 1;
+        letter-spacing: -0.03em;
+    }
+
+    .table-header-text {
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: -0.01em;
+    }
+
+    .body-text {
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+
+    .btn-text {
+        font-weight: 600;
+        font-size: 1.05rem;
+        letter-spacing: 0.01em;
+    }
+
+    .section-title {
+        font-weight: 800;
+        font-size: 2rem;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+    }
+
+    ::deep .mud-table-head .mud-table-cell {
+        font-weight: 700;
+        font-size: 1.05rem;
+        padding: 20px 16px;
+    }
+
+    ::deep .mud-table-cell {
+        font-size: 1rem;
+        padding: 16px;
+    }
+</style>
+
+@if (isLoading)
+{
+    <MudContainer MaxWidth="MaxWidth.False" Class="association-page py-6 px-6">
+        <MudPaper Class="pa-12 text-center" Elevation="0">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText Class="mt-4 body-text">Loading associations...</MudText>
+        </MudPaper>
+    </MudContainer>
+}
+else if (!assignments.Any())
+{
+    <MudContainer MaxWidth="MaxWidth.False" Class="association-page py-6 px-6">
+        <MudPaper Class="pa-12 text-center" Elevation="3">
+            <MudIcon Icon="@Icons.Material.Outlined.LinkOff"
+                     Color="Color.Secondary"
+                     Style="font-size: 5rem; opacity: 0.3;" />
+            <MudText Class="section-title mt-4 mb-2">No Associations Found</MudText>
+            <MudText Class="body-text mb-6" Color="Color.Secondary">
+                No products have documents assigned yet
+            </MudText>
+        </MudPaper>
+    </MudContainer>
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.False" Class="association-page py-6 px-6" Style="max-width: 100%;">
+
+        <!-- Page Header -->
+        <MudPaper Class="pa-6 mb-4" Elevation="3">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="2">
+                    <MudText Class="page-title">
+                        <MudIcon Icon="@Icons.Material.Filled.Link" Class="mr-3" Size="Size.Large" />
+                        Product-Document Associations
+                    </MudText>
+                    <MudText Class="page-subtitle" Color="Color.Secondary">
+                        Simple view of which products are linked to which documents
+                    </MudText>
+                </MudStack>
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                               Color="Color.Primary"
+                               Size="Size.Large"
+                               OnClick="LoadAssociations"
+                               title="Refresh Data" />
+            </MudStack>
+        </MudPaper>
+
+        <!-- Stats Cards -->
+        <MudGrid Class="mb-4">
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="stat-card pa-6" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudStack Spacing="2">
+                            <MudText Class="stat-label" Color="Color.Secondary">PRODUCTS WITH DOCS</MudText>
+                            <MudText Class="stat-number" Color="Color.Primary">@totalProducts</MudText>
+                        </MudStack>
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Large" Color="Color.Primary" Style="font-size: 3.5rem; opacity: 0.3;" />
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="stat-card pa-6" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudStack Spacing="2">
+                            <MudText Class="stat-label" Color="Color.Secondary">ASSIGNED DOCUMENTS</MudText>
+                            <MudText Class="stat-number" Color="Color.Success">@totalDocuments</MudText>
+                        </MudStack>
+                        <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Large" Color="Color.Success" Style="font-size: 3.5rem; opacity: 0.3;" />
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="stat-card pa-6" Elevation="2">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudStack Spacing="2">
+                            <MudText Class="stat-label" Color="Color.Secondary">TOTAL LINKS</MudText>
+                            <MudText Class="stat-number" Color="Color.Info">@totalAssociations</MudText>
+                        </MudStack>
+                        <MudIcon Icon="@Icons.Material.Filled.Link" Size="Size.Large" Color="Color.Info" Style="font-size: 3.5rem; opacity: 0.3;" />
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Search -->
+        <MudPaper Class="pa-5 mb-4" Elevation="2">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Spacing="3">
+                <MudTextField @bind-Value="searchString"
+                              Placeholder="Search by product or document name..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="flex-grow-1"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense" />
+
+                <MudSelect T="string" @bind-Value="filterOwnership"
+                           Label="Ownership"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Style="min-width: 180px;">
+                    <MudSelectItem Value="@("All")">All</MudSelectItem>
+                    <MudSelectItem Value="@("Owned")">Owned</MudSelectItem>
+                    <MudSelectItem Value="@("Shared")">Shared</MudSelectItem>
+                </MudSelect>
+            </MudStack>
+        </MudPaper>
+
+        <!-- Data Grid -->
+        <MudPaper Class="pa-6" Elevation="3">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                <MudText Class="section-title">
+                    <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-2" Size="Size.Large" />
+                    Associations
+                </MudText>
+
+                <MudChip T="int" Color="Color.Info"
+                         Icon="@Icons.Material.Filled.CheckCircle"
+                         Size="Size.Large"
+                         Style="font-weight: 600;">
+                    @filteredAssignments.Count Links
+                </MudChip>
+            </MudStack>
+
+            <MudDivider Class="mb-6" />
+
+            <MudDataGrid T="ProductDocumentAssignmentDto"
+                         Items="@filteredAssignments"
+                         QuickFilter="@_quickFilter"
+                         Hover="true"
+                         Striped="true"
+                         Elevation="0">
+
+                <Columns>
+                    <!-- Product -->
+                    <TemplateColumn Title="Product" Sortable="true" SortBy="@(x => x.ProductDesignation)">
+                        <HeaderTemplate>
+                            <MudText Class="table-header-text">Product</MudText>
+                        </HeaderTemplate>
+                        <CellTemplate Context="context">
+                            <MudStack Spacing="1">
+                                <MudText Class="body-text" Style="font-weight: 600; color: #1976d2;">
+                                    @context.Item.ProductDesignation
+                                </MudText>
+                                <MudText Typo="Typo.caption" Style="color: #6c757d;">
+                                    @context.Item.ManufacturerName
+                                </MudText>
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
+
+                   
+
+                    <!-- Document -->
+                    <TemplateColumn Title="Document" Sortable="true" SortBy="@(x => x.DocumentTitle)">
+                        <HeaderTemplate>
+                            <MudText Class="table-header-text">Document</MudText>
+                        </HeaderTemplate>
+                        <CellTemplate Context="context">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Description"
+                                         Color="Color.Secondary"
+                                         Size="Size.Medium" />
+                                <MudStack Spacing="1">
+                                    <MudText Class="body-text" Style="font-weight: 600;">
+                                        @context.Item.DocumentTitle
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Style="color: #6c757d;">
+                                        @context.Item.FileName
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
+
+                    <!-- Ownership -->
+                    <TemplateColumn Title="Type" Sortable="true" SortBy="@(x => x.OwnershipType)">
+                        <HeaderTemplate>
+                            <MudText Class="table-header-text">Type</MudText>
+                        </HeaderTemplate>
+                        <CellTemplate Context="context">
+                            @if (context.Item.OwnershipType == "Owned")
+                            {
+                                <MudChip Color="Color.Success"
+                                         Icon="@Icons.Material.Filled.CheckCircle"
+                                         Size="Size.Small"
+                                         Style="font-weight: 600;">
+                                    Owned
+                                </MudChip>
+                            }
+                            else
+                            {
+                                <MudChip Color="Color.Info"
+                                         Icon="@Icons.Material.Filled.Share"
+                                         Size="Size.Small"
+                                         Style="font-weight: 600;">
+                                    Shared
+                                </MudChip>
+                            }
+                        </CellTemplate>
+                    </TemplateColumn>
+
+                    <!-- Actions -->
+                    <TemplateColumn Title="Actions" Sortable="false">
+                        <HeaderTemplate>
+                            <MudText Class="table-header-text">Actions</MudText>
+                        </HeaderTemplate>
+                        <CellTemplate Context="context">
+                            <MudStack Row="true" Spacing="1">
+                                <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                               Color="Color.Primary"
+                                               Size="Size.Small"
+                                               OnClick="@(() => ViewProduct(context.Item.ProductId))"
+                                               title="View Product Documents" />
+                            </MudStack>
+                        </CellTemplate>
+                    </TemplateColumn>
+                </Columns>
+
+                <PagerContent>
+                    <MudDataGridPager T="ProductDocumentAssignmentDto" />
+                </PagerContent>
+            </MudDataGrid>
+        </MudPaper>
+    </MudContainer>
+}
+
+@code {
+    private List<ProductDocumentAssignmentDto> assignments = new();
+    private List<ProductDocumentAssignmentDto> filteredAssignments => GetFilteredAssignments();
+
+    private bool isLoading = true;
+    private string searchString = "";
+    private string filterOwnership = "All";
+
+    private int totalProducts = 0;
+    private int totalDocuments = 0;
+    private int totalAssociations = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAssociations();
+    }
+
+    private async Task LoadAssociations()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            assignments = (await Mediator.Send(new GetAllProductDocumentAssignmentsQuery())).ToList();
+
+            totalProducts = assignments.Select(a => a.ProductId).Distinct().Count();
+            totalDocuments = assignments.Select(a => a.ProductDocumentId).Distinct().Count();
+            totalAssociations = assignments.Count;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private List<ProductDocumentAssignmentDto> GetFilteredAssignments()
+    {
+        var filtered = assignments.AsEnumerable();
+
+        if (filterOwnership != "All")
+        {
+            filtered = filtered.Where(a => a.OwnershipType == filterOwnership);
+        }
+
+        return filtered.ToList();
+    }
+
+    private Func<ProductDocumentAssignmentDto, bool> _quickFilter => assignment =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        var q = searchString.Trim().ToLower();
+
+        if (assignment.ProductDesignation.ToLower().Contains(q)) return true;
+        if (assignment.ManufacturerName.ToLower().Contains(q)) return true;
+        if (assignment.DocumentTitle.ToLower().Contains(q)) return true;
+        if (assignment.FileName.ToLower().Contains(q)) return true;
+
+        return false;
+    };
+
+    private void ViewProduct(Guid productId)
+    {
+        Navigation.NavigateTo($"/productdocument/{productId}");
+    }
+}

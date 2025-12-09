@@ -3,56 +3,258 @@
 @using SMEAdapter.Application.Companies.Queries.GetAllCompanies
 @using SMEAdapter.Application.DTOs
 
-<MudDialog>
-    <TitleContent>Select Manufacturer</TitleContent>
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    .manufacturer-dialog {
+        font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .manufacturer-header {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+    }
+
+    .header-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .header-subtitle {
+        font-size: 0.9375rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .search-box {
+        background: white;
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .search-box:focus-within {
+        border-color: #2196F3;
+        box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+    }
+
+    .manufacturer-list {
+        max-height: 400px;
+        overflow-y: auto;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+    }
+
+    .manufacturer-item {
+        padding: 1rem 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .manufacturer-item:hover {
+        background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+        transform: translateX(4px);
+    }
+
+    .manufacturer-item:last-child {
+        border-bottom: none;
+    }
+
+    .manufacturer-name {
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: #212529;
+        margin-bottom: 0.25rem;
+    }
+
+    .manufacturer-location {
+        font-size: 0.875rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .empty-state {
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+
+    .empty-icon {
+        font-size: 3.5rem !important;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    .empty-text {
+        font-size: 1.125rem;
+        color: #adb5bd;
+        font-weight: 500;
+    }
+
+    .action-button-cancel {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 12px 24px;
+        text-transform: none;
+        border-radius: 10px;
+    }
+
+    .company-count {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 0.25rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+</style>
+
+<MudDialog Class="manufacturer-dialog" MaxWidth="MaxWidth.Medium" FullWidth="true">
+    <TitleContent>
+        <MudPaper Class="manufacturer-header" Elevation="0">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="1">
+                    <MudText Class="header-title">
+                        Select Manufacturer
+                    </MudText>
+                    <MudText Class="header-subtitle">
+                        Choose a manufacturer from the list below
+                    </MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    @if (filteredCompanies.Count > 0)
+                    {
+                        <MudChip T="int" Size="Size.Small" Class="company-count">
+                            @filteredCompanies.Count manufacturer@(filteredCompanies.Count != 1 ? "s" : "")
+                        </MudChip>
+                    }
+                    <MudAvatar Size="Size.Large" 
+                               Style="width: 56px; height: 56px; background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);">
+                        <MudIcon Icon="@Icons.Material.Filled.Business" 
+                                 Style="font-size: 1.75rem; color: #495057;" />
+                    </MudAvatar>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+    </TitleContent>
 
     <DialogContent>
+        <MudStack Spacing="3">
+            <!-- Search Box -->
+            <MudTextField @bind-Value="searchText"
+                          Placeholder="Search manufacturers by name or location..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Class="search-box"
+                          Immediate="true"
+                          Style="background: white;" />
 
-        <MudList T="String"Dense="true">
-            @foreach (var company in companies)
+            <!-- Manufacturer List -->
+            @if (filteredCompanies.Any())
             {
-                <MudListItem Class="pa-3" Style="cursor:pointer"
-                             OnClick="@(() => Select(company))">
-
-                    <MudText Typo="Typo.subtitle1">@company.CompanyManufacturerName.First().Value</MudText>
-                    <MudText Typo="Typo.caption" class="text-muted">
-                        @GetEn(company.CompanyAddressInfo.City),
-                        @GetEn(company.CompanyAddressInfo.Country)
-                    </MudText>
-
-                </MudListItem>
-
-                <MudDivider />
+                <MudPaper Class="manufacturer-list" Elevation="0">
+                    @foreach (var company in filteredCompanies)
+                    {
+                        <div class="manufacturer-item" @onclick="@(() => Select(company))">
+                            <MudStack Spacing="1">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Factory" 
+                                             Size="Size.Medium" 
+                                             Style="color: #6c757d;" />
+                                    <MudText Class="manufacturer-name">
+                                        @GetEn(company.CompanyManufacturerName)
+                                    </MudText>
+                                </MudStack>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Style="margin-left: 40px;">
+                                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" 
+                                             Size="Size.Small" 
+                                             Style="color: #adb5bd;" />
+                                    <MudText Class="manufacturer-location">
+                                        @GetEn(company.CompanyAddressInfo.City), @GetEn(company.CompanyAddressInfo.Country)
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                        </div>
+                    }
+                </MudPaper>
             }
-        </MudList>
-
+            else
+            {
+                <MudPaper Class="empty-state" Elevation="0">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                        <MudIcon Icon="@Icons.Material.Filled.SearchOff" Class="empty-icon" />
+                        <MudText Class="empty-text">
+                            No manufacturers found
+                        </MudText>
+                        <MudText Typo="Typo.body2" Style="color: #adb5bd;">
+                            @if (string.IsNullOrWhiteSpace(searchText))
+                            {
+                                <text>No manufacturers are available at the moment</text>
+                            }
+                            else
+                            {
+                                <text>Try adjusting your search criteria</text>
+                            }
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            }
+        </MudStack>
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="Cancel" Color="Color.Secondary">Cancel</MudButton>
+        <MudStack Row="true" Spacing="2" Style="padding: 0.5rem; width: 100%;" Justify="Justify.FlexEnd">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       OnClick="Cancel"
+                       Class="action-button-cancel"
+                       Style="border-color: #d1d5db; color: #6b7280;">
+                Cancel
+            </MudButton>
+        </MudStack>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] IMudDialogInstance Dialog { get; set; } = default!;
-
+    
     private List<CompanyDto> companies = new();
-
+    private string searchText = "";
+    
+    private List<CompanyDto> filteredCompanies => 
+        string.IsNullOrWhiteSpace(searchText) 
+            ? companies 
+            : companies.Where(c => 
+                GetEn(c.CompanyManufacturerName).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                GetEn(c.CompanyAddressInfo.City).Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+                GetEn(c.CompanyAddressInfo.Country).Contains(searchText, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+    
     protected override async Task OnInitializedAsync()
     {
         companies = (await Mediator.Send(new GetAllCompaniesQuery())).ToList();
     }
-
+    
     private void Select(CompanyDto company)
     {
         Dialog.Close(DialogResult.Ok(company));
     }
-
+    
     private void Cancel()
     {
         Dialog.Cancel();
     }
-
+    
     private string GetEn(Dictionary<string, string> dict)
     {
         if (dict.TryGetValue("en", out var en)) return en;

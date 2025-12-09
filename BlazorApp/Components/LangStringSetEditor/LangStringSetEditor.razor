@@ -1,78 +1,71 @@
 ﻿@using System.Globalization
 
-<MudStack Spacing="2">
-    
+<MudStack Spacing="1">
 
     @foreach (var row in Rows)
     {
-        <MudGrid >
-            <MudItem xs="12" sm="2">
-                <div style="width:180px">
-                <MudSelect T="string"
-                           @bind-Value="row.Language"
-                           Variant="Variant.Outlined"
-                           Required="@Required"
-                           Error="@row.ShowLangError"
-                           ErrorText="@row.LangErrorText"
-                           Placeholder="Select Language"
-                           Disabled="@Disabled"
-                           Dense="true">
-                    @foreach (var opt in LanguageOptionsFilteredFor(row))
-                    {
-                        <MudSelectItem T="string" Value="@opt.Code">
-                            @opt.Display  &nbsp; &nbsp; @opt.Code
-                        </MudSelectItem>
-                    }
-                </MudSelect>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
 
-                </div>
-            </MudItem>
+            <!-- LANGUAGE DROPDOWN -->
+            <div style="@($" width:{LanguageWidth};")">
+            <MudSelect T="string"
+                       Style="@($"min-width:{LanguageWidth}; width:{LanguageWidth}; flex-shrink:0;")"
+                       @bind-Value="row.Language"
+                       Variant="Variant.Outlined"
+                       Required="@Required"
+                       Error="@row.ShowLangError"
+                       ErrorText="@row.LangErrorText"
+                       Placeholder="Lang"
+                       Disabled="@Disabled"
+                       Dense="true">
+                @foreach (var opt in LanguageOptionsFilteredFor(row))
+                {
+                    <MudSelectItem T="string" Value="@opt.Code">
+                        @opt.Display (@opt.Code)
+                    </MudSelectItem>
+                }
+            </MudSelect>
+            </div>
+            <!-- TEXT INPUT -->
+            <div Style="@($"width:{TextWidth};")">
+            <MudTextField T="string"
+                          
+                          @bind-Value="row.Text"
+                          Variant="Variant.Outlined"
+                          Placeholder="@Placeholder"
+                          Required="@Required"
+                          Disabled="@Disabled"
+                          Lines="1"
+                          Immediate="true"
+                          Clearable="true"
+                          OnBlur="(_)=>Commit()" />
+            </div>
+            <!-- DELETE -->
+            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                           Color="Color.Error"
+                           Variant="Variant.Text"
+                           Disabled="@(Disabled || Rows.Count <= MinRows)"
+                           OnClick="@(() => RemoveRow(row))" />
 
-            <MudItem xs="12" sm="8">
-                <MudTextField T="string"
-                              @bind-Value="row.Text"
-                              Variant="Variant.Outlined"
-                              Placeholder="@Placeholder"
-                              Required="@Required"
-                              Disabled="@Disabled"
-                              Margin="Margin.Dense" 
-                              Lines="1"
-                              Immediate="true"
-                              Clearable="true"
-                              OnBlur="(_)=> Commit()"/>
-            </MudItem>
-
-            <MudItem xs="12" sm="1" Class="flex justify-end">
-                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                               Color="Color.Error"
-                               Variant="Variant.Text"
-                               Disabled="@(Disabled || (Rows.Count <= MinRows))"
-                               OnClick="@(()=>RemoveRow(row))" />
-            </MudItem>
-
-            <MudItem xs="12" sm="1" Class="flex justify-end">
-                <MudTooltip Text = "Add Entry">
-                <MudIconButton Icon="@Icons.Material.Filled.Add"
+            <!-- ADD ROW -->
+            <MudIconButton Icon="@Icons.Material.Filled.Add"
                            Color="Color.Primary"
                            Variant="Variant.Text"
                            Disabled="@(Disabled || (MaxRows.HasValue && Rows.Count >= MaxRows))"
                            OnClick="@AddRow" />
-                </MudTooltip>
-                   
-            </MudItem>
-        </MudGrid>
-    }
 
-    
+        </MudStack>
+    }
 
     @if (!string.IsNullOrEmpty(HelpText))
     {
         <MudText Typo="Typo.caption" Class="opacity-70">@HelpText</MudText>
     }
+
 </MudStack>
-
 @code {
-
+    [Parameter] public string LanguageWidth { get; set; } = "100px";
+    [Parameter] public string TextWidth { get; set; } 
     [Parameter] public Dictionary<string,string>? Value { get; set; }
     [Parameter] public EventCallback<Dictionary<string,string>?> ValueChanged { get; set; }
 

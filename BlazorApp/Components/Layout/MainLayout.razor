@@ -1,80 +1,125 @@
 ﻿@inherits LayoutComponentBase
 @inject SMEAdapter.Application.Services.CompanyInfoService CompanyInfo
+@implements IDisposable
 
-<MudThemeProvider/>
-<MudDialogProvider/>
-<MudSnackbarProvider/>
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 <MudPopoverProvider />
 
+<MudLayout>
+    <MudAppBar style="background-color: #2A9FD6;height :70px" Elevation="2">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Size="Size.Large"
+                       Edge="Edge.Start"
+                       OnClick="@DrawerToggle" />
 
-<MudLayout >
-    <MudAppBar style="background-color :  #2A9FD6; " Elevation="2" >
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Size = "Size.Large" Edge="Edge.Start" OnClick="@DrawerToggle" Style=""/>
         <div style="display:flex; align-items:center; height:70px; margin-left:16px; margin-right:16px;">
-            <img src="images/SME_Adapter_Logo.png" alt="Logo" style="display:flex; align-items:center; height:65px; margin-left:16px; margin-right:5px;"  />
+            <img src="images/SME_Adapter_Logo.png"
+                 alt="Logo"
+                 style="height:65px; margin-left:16px; margin-right:5px;" />
         </div>
+
         <div class="appbar-title">
             <MudText Typo="Typo.h3">SME Adapter</MudText>
         </div>
+
         <MudSpacer />
+
         <div style="display:flex; align-items:center; height:100%; margin-right:16px;">
-            <img src="images/David_Logo_New.png" alt="Logo" style="height:80px; width:auto;" />
+            <img src="images/David_Logo_New.png"
+                 alt="Logo"
+                 style="height:80px; width:auto;" />
         </div>
+
         <MudMenu AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
             <ActivatorContent>
-                
-                    @if (CompanyInfo.CurrentCompany is null)
-                    {
-                        <!-- Default account icon -->
-                    <MudAvatar Style="height:70px; width:70px; padding:5px">
+                @if (CompanyInfo.CurrentCompany is null)
+                {
+                    <!-- Default account icon -->
+                    <MudAvatar Style="height:80px; width:80px; padding:5px;">
                         <MudIcon Icon="@Icons.Material.Filled.AccountCircle"
-                                 Style="font-size:80px; color:#F5F5F5" />
-                      </MudAvatar> 
+                                 Style="font-size:80px; color:#F5F5F5;" />
+                    </MudAvatar>
+                }
+                else
+                {
+                    <!-- Company image with proper sizing -->
+                    @if (!string.IsNullOrWhiteSpace(CompanyInfo.CurrentCompany.CompanyImageUrl))
+                    {
+                        <div style="width:80px; height:80px; padding:8px; background:white; border-radius:12px; border:2px solid #e9ecef; display:flex; align-items:center; justify-content:center;">
+                            <img src="@GetImageUrl()"
+                                 alt="Company Logo"
+                                 style="max-width:100%; max-height:100%; object-fit:contain;" />
+                        </div>
                     }
                     else
                     {
-                        <!-- Company image -->
-                    <MudAvatar Size="Size.Large">
-                        @if (CompanyInfo.CurrentCompany.CompanyImageUrl is not null)
-                        {
-                        <MudImage Src="@CompanyInfo.CurrentCompany.CompanyImageUrl"
-                                  Alt="CompanyImage"
-                                  Style="object-fit:contain;width:100%; height:100%;" />
-                        }
-                    </MudAvatar>
+                        <MudAvatar Color="Color.Primary"
+                                   Style="height:80px; width:80px; background:white;">
+                            <MudIcon Icon="@Icons.Material.Filled.Business"
+                                     Style="font-size:3rem; color:#2A9FD6;" />
+                        </MudAvatar>
                     }
-              
+                }
             </ActivatorContent>
-            
+
             <ChildContent>
                 <MudMenuItem Label="Profile" />
                 <MudMenuItem Label="Theme" />
                 <MudMenuItem Label="Settings" />
             </ChildContent>
         </MudMenu>
-
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Width="250px" Elevation="2" Style="padding-top:10px;">
-        <NavMenu/>
+
+    <MudDrawer @bind-Open="_drawerOpen"
+               ClipMode="DrawerClipMode.Always"
+               Width="250px"
+               Elevation="2"
+               Style="padding-top:10px;">
+        <NavMenu />
     </MudDrawer>
-    
-    
+
     <MudMainContent>
         @Body
     </MudMainContent>
-   
-    
 </MudLayout>
+
 @code {
     bool _drawerOpen = true;
+    private string? _cachedImageUrl;
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
+
     protected override void OnInitialized()
     {
-        CompanyInfo.OnChange += async () => await InvokeAsync(StateHasChanged);
+        CompanyInfo.OnChange += HandleCompanyChange;
+        _cachedImageUrl = CompanyInfo.CurrentCompany?.CompanyImageUrl;
+    }
+
+    private async void HandleCompanyChange()
+    {
+        _cachedImageUrl = CompanyInfo.CurrentCompany?.CompanyImageUrl;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private string GetImageUrl()
+    {
+        // Add a cache buster to force image reload
+        var url = CompanyInfo.CurrentCompany?.CompanyImageUrl ?? "";
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            return $"{url}?v={DateTime.Now.Ticks}";
+        }
+        return url;
+    }
+
+    public void Dispose()
+    {
+        CompanyInfo.OnChange -= HandleCompanyChange;
     }
 }
-

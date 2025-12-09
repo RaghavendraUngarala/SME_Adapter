@@ -1,4 +1,10 @@
 ﻿
+
+<style>
+    .nowrap {
+        white-space: nowrap;
+    }
+</style>
 <MudAppBar Color="Color.Secondary" Elevation="2">
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@DrawerToggle" />
     <MudText Typo="Typo.h6" Class="px-4">Navigation Menu</MudText>
@@ -20,15 +26,22 @@
         </MudNavLink>
         <MudNavLink Href="/manufacturerdetails" Match="NavLinkMatch.All">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <MudIcon Icon="@Icons.Material.Filled.Factory" Size="Size.Large" />
+                <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" />
                 <span class="nav-menu-text">Company</span>
             </div>
         </MudNavLink>
         
-        <MudNavLink Href="/testpage" Match="NavLinkMatch.All">
+        <MudNavLink Href="/technicaldata" Match="NavLinkMatch.All">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <MudIcon Icon="@Icons.Material.Filled.Engineering" Size="Size.Large" />
+                <span class="nav-menu-text">Technical Data</span>
+            </div>
+        </MudNavLink>
+
+        <MudNavLink Href="/productdocumentassociation" Match="NavLinkMatch.All">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <MudIcon Icon="@Icons.Material.Filled.FileOpen" Size="Size.Large" />
-                <span class="nav-menu-text">Technical Data</span>
+                <span class="nav-menu-text">Documents Management</span>
             </div>
         </MudNavLink>
         @* <MudNavLink Href="/testpage" Match="NavLinkMatch.All">

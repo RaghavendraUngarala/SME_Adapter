@@ -43,8 +43,19 @@ namespace SMEAdapter.Infrastructure.Repositories
             }
 
             public async Task DeleteAsync(Product product)
-            {                
+            {
+                // 1️⃣ REMOVE document assignments before deleting product
+                var assignments = await _context.ProductDocumentAssignments
+                    .Where(a => a.ProductId == product.Id)
+                    .ToListAsync();
+
+                if (assignments.Any())
+                    _context.ProductDocumentAssignments.RemoveRange(assignments);
+
+                // 2️⃣ Remove the product itself
                 _context.Products.Remove(product);
+
+                // 3️⃣ Save once
                 await _context.SaveChangesAsync();
             }
     }

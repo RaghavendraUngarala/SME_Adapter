@@ -1,0 +1,229 @@
+﻿<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    .delete-dialog {
+        font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .delete-header {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #fecaca;
+    }
+
+    .delete-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #b91c1c;
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .warning-box {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-left: 4px solid #f59e0b;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-top: 1.5rem;
+    }
+
+    .warning-text {
+        font-size: 0.9375rem;
+        color: #92400e;
+        font-weight: 600;
+    }
+
+    .item-highlight {
+        background: #ef4444;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 700;
+        display: inline-block;
+        margin: 0 0.25rem;
+    }
+
+    .delete-message {
+        font-size: 1.125rem;
+        color: #374151;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+
+    .action-button-delete {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 12px 32px;
+        border-radius: 10px;
+        text-transform: none;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        transition: all 0.3s ease;
+    }
+
+        .action-button-delete:hover {
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+
+    .action-button-cancel {
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 12px 24px;
+        text-transform: none;
+        border-radius: 10px;
+    }
+
+    .warning-icon-pulse {
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+
+    .consequence-item {
+        padding: 0.75rem;
+        background: #fef2f2;
+        border-radius: 8px;
+        border: 1px solid #fecaca;
+    }
+</style>
+
+<MudDialog Class="delete-dialog" MaxWidth="MaxWidth.Small">
+    <TitleContent>
+        <MudPaper Elevation="0">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+                <MudAvatar Size="Size.Large"
+                           Style="width: 64px; height: 64px; background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);"
+                           Class="warning-icon-pulse">
+                    <MudIcon Icon="@Icons.Material.Filled.DeleteForever"
+                             Style="font-size: 2rem; color: white;" />
+                </MudAvatar>
+                <MudText Class="delete-title">
+                    @Title
+                </MudText>
+            </MudStack>
+        </MudPaper>
+    </TitleContent>
+
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (!string.IsNullOrEmpty(ContentText))
+            {
+                <MudText Class="delete-message">
+                    @((MarkupString)ContentText)
+                </MudText>
+            }
+            else
+            {
+                <MudText Class="delete-message">
+                    @Message
+                    @if (Count.HasValue && Count.Value > 0)
+                    {
+                      <span class="item-highlight">@Count</span>
+                      @ItemName
+                      @(Count != 1 ? "s" : "")
+                    }
+                    else if (!string.IsNullOrEmpty(ItemToDelete))
+                    {
+                        <br />
+                        <span class="item-highlight">@ItemToDelete</span>
+                    }
+                </MudText>
+            }
+
+            @if (ShowWarning || (Consequences != null && Consequences.Any()))
+            {
+                <MudPaper Class="warning-box" Elevation="0">
+                    <MudStack Spacing="2">
+                        <MudStack Row="true" AlignItems="AlignItems.Start" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Warning"
+                                     Style="color: #f59e0b; font-size: 1.5rem;" />
+                            <MudStack Spacing="1">
+                                <MudText Class="warning-text">
+                                    @WarningTitle
+                                </MudText>
+                                @if (!string.IsNullOrEmpty(WarningMessage))
+                                {
+                                    <MudText Typo="Typo.body2" Style="color: #78350f;">
+                                        @WarningMessage
+                                    </MudText>
+                                }
+                            </MudStack>
+                        </MudStack>
+
+                        @if (Consequences != null && Consequences.Any())
+                        {
+                            <MudStack Spacing="1" Style="margin-left: 2.5rem;">
+                                @foreach (var consequence in Consequences)
+                                {
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="consequence-item">
+                                        <MudIcon Icon="@Icons.Material.Filled.Circle" Size="Size.Small" Style="color: #ef4444; font-size: 0.5rem;" />
+                                        <MudText Typo="Typo.body2" Style="color: #991b1b; font-weight: 500;">
+                                            @consequence
+                                        </MudText>
+                                    </MudStack>
+                                }
+                            </MudStack>
+                        }
+                    </MudStack>
+                </MudPaper>
+            }
+        </MudStack>
+    </DialogContent>
+
+    <DialogActions>
+        <MudStack Row="true" Spacing="3" Style="padding: 1rem; width: 100%;" Justify="Justify.FlexEnd">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Error"
+                       OnClick="@(() => MudDialog.Close(DialogResult.Ok(true)))"
+                       StartIcon="@Icons.Material.Filled.DeleteForever"
+                       Class="action-button-delete">
+                @ConfirmButtonText
+            </MudButton>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       OnClick="@(() => MudDialog.Cancel())"
+                       Class="action-button-cancel"
+                       Style="border-color: #d1d5db; color: #6b7280;">
+                @CancelButtonText
+            </MudButton>
+        </MudStack>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = default!;
+
+    // Basic parameters
+    [Parameter] public string Title { get; set; } = "Delete Item";
+    [Parameter] public string Message { get; set; } = "Are you sure you want to delete";
+    [Parameter] public string ItemName { get; set; } = "item";
+    [Parameter] public int? Count { get; set; }
+    [Parameter] public string ItemToDelete { get; set; } = string.Empty;
+
+    // Custom content (overrides Message if provided)
+    [Parameter] public string ContentText { get; set; } = string.Empty;
+
+    // Warning parameters
+    [Parameter] public bool ShowWarning { get; set; } = true;
+    [Parameter] public string WarningTitle { get; set; } = "This action cannot be undone";
+    [Parameter] public string WarningMessage { get; set; } = string.Empty;
+    [Parameter] public List<string> Consequences { get; set; }
+
+    // Button text
+    [Parameter] public string ConfirmButtonText { get; set; } = "Yes, Delete";
+    [Parameter] public string CancelButtonText { get; set; } = "Cancel";
+}

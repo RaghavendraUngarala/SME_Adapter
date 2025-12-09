@@ -5,54 +5,182 @@
 @using SMEAdapter.Application.DTOs;
 @inject IMediator Mediator
 @using SMEAdapter.Application.Companies.CreateCompanies
+@inject ISnackbar Snackbar
 
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
+    .welcome-page {
+        font-family: 'Poppins', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-<MudPaper Class="pa-6 ma-4" Elevation="4">
-    <MudText Typo="Typo.h4" GutterBottom="true">
-        👋 Welcome to SME Adapter!
-    </MudText>
-    <MudText Typo="Typo.h6" Class="mb-4">
-        Take your first steps: set up your company and your first product.
-    </MudText>
+    .page-title {
+        font-weight: 800;
+        font-size: 3rem;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+    }
 
-    <MudStepper CenterLabels="true" CurrentStepColor="Color.Secondary" @bind-ActiveIndex="_activeIndex" >
-        <!-- Step 1: Company Details -->
-        <MudStep Title="Company Details" >
-            <div style="width : 3000px">
-               <CompanyForm OnCompleted="@GoNextStep" />
-            </div>
-        </MudStep>
+    .page-subtitle {
+        font-weight: 500;
+        font-size: 1.25rem;
+        letter-spacing: -0.01em;
+    }
 
+    .step-title {
+        font-weight: 700;
+        font-size: 1.2rem;
+        letter-spacing: -0.01em;
+    }
 
-        <MudStep Title="First Product">
-            @if (CompanyInfo.CurrentCompany != null)
-            {
-                <div style="width : 1500px">
-                   <InitialProductFrom IsFirstProduct="true"></InitialProductFrom>
-                </div>
-            }
-            else
-            {
-                <MudText Typo="Typo.h6" Color="Color.Error">Please complete company details first.</MudText>
-            }
-        </MudStep>
-    </MudStepper>
-</MudPaper>
+    .welcome-card {
+        border-radius: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .stepper-card {
+        border-radius: 16px;
+    }
+
+    .progress-indicator {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="welcome-page py-6 px-6" Style="max-width: 100%; padding: 0;">
+
+    <!-- Simplified Welcome Header -->
+    <MudPaper Class="pa-8 mb-4" Elevation="3" Square="true">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center">
+                <MudAvatar Size="Size.Large" Style="width: 70px; height: 70px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <MudIcon Icon="@Icons.Material.Filled.Celebration" Style="font-size: 2.5rem; color: white;" />
+                </MudAvatar>
+                <MudStack Spacing="1">
+                    <MudText Style="font-weight: 800; font-size: 2.25rem; letter-spacing: -0.02em;">
+                        Welcome to SME Adapter
+                    </MudText>
+                    <MudText Style="font-weight: 500; font-size: 1.1rem;" Color="Color.Secondary">
+                        Complete these 2 steps to get started with your product catalog
+                    </MudText>
+                </MudStack>
+            </MudStack>
+            <MudPaper Class="pa-3" Elevation="0" Style="background: #f5f5f5; border-radius: 8px;">
+                <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                    <MudText Style="font-size: 0.75rem; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px;">
+                        Progress
+                    </MudText>
+                    <MudText Style="font-weight: 800; font-size: 1.75rem; color: #667eea;">
+                        @(_activeIndex + 1) / 2
+                    </MudText>
+                </MudStack>
+            </MudPaper>
+        </MudStack>
+    </MudPaper>
+
+    <!-- Stepper -->
+    <MudPaper Class="stepper-card pa-6" Elevation="3">
+        <MudStepper @bind-ActiveIndex="_activeIndex"
+                    HeaderSize="Size.Large"
+                    HeaderTextView="HeaderTextView.All">
+
+            <!-- Step 1: Company Details -->
+            <MudStep Title="Company Details"
+                     Icon="@Icons.Material.Filled.Business">
+                <ChildContent>
+                    <MudStack Spacing="4" Class="pa-4">
+                        <!-- Step Info -->
+                        <MudPaper Class="pa-4" Elevation="0" Style="background: #f8f9fa; border-radius: 12px;">
+                            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Large" />
+                                <MudStack Spacing="1">
+                                    <MudText Class="step-title">Set Up Your Company Profile</MudText>
+                                    <MudText Style="font-size: 1rem; color: #666;">
+                                        Enter your company's basic information. This will be associated with all your products.
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                        </MudPaper>
+
+                        <!-- Company Form -->
+                        <CompanyForm OnCompleted="@GoNextStep" />
+                    </MudStack>
+                </ChildContent>
+            </MudStep>
+
+            <!-- Step 2: First Product -->
+            <MudStep Title="First Product"
+                     Icon="@Icons.Material.Filled.Inventory">
+                <ChildContent>
+                    @if (CompanyInfo.CurrentCompany != null)
+                    {
+                        <MudStack Spacing="4" Class="pa-4">
+                            <!-- Step Info -->
+                            <MudPaper Class="pa-4" Elevation="0" Style="background: #f8f9fa; border-radius: 12px;">
+                                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Start">
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                                    <MudStack Spacing="1">
+                                        <MudText Class="step-title">Add Your First Product</MudText>
+                                        <MudText Style="font-size: 1rem; color: #666;">
+                                            Great! Now let's add your first product to get started with the catalog.
+                                        </MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudPaper>
+
+                            <!-- Product Form -->
+                            <InitialProductFrom IsFirstProduct="true" />
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudPaper Class="pa-8 text-center" Elevation="0" Style="background: #fff3e0; border-radius: 12px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Style="font-size: 4rem;" />
+                            <MudText Typo="Typo.h5" Class="mt-4 mb-2" Color="Color.Warning" Style="font-weight: 700;">
+                                Company Setup Required
+                            </MudText>
+                            <MudText Style="font-size: 1rem; color: #666;" Class="mb-4">
+                                Please complete the company details in Step 1 before adding products.
+                            </MudText>
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Warning"
+                                       StartIcon="@Icons.Material.Filled.ArrowBack"
+                                       OnClick="@(() => _activeIndex = 0)"
+                                       Size="Size.Large"
+                                       Style="font-weight: 600;">
+                                Go Back to Step 1
+                            </MudButton>
+                        </MudPaper>
+                    }
+                </ChildContent>
+            </MudStep>
+        </MudStepper>
+    </MudPaper>
+
+    
+
+</MudContainer>
 
 @code {
     private int _activeIndex = 0;
     private CompanyDto? _company;
+
     private async Task GoNextStep(CompanyDto company)
     {
         _company = company;
-
-        // Also keep it in the service for consistency
         CompanyInfo.CurrentCompany = company;
+
         var newId = await Mediator.Send(new CreateCompanyCommand(company));
+        company.Id = newId;
+
+        Snackbar.Add("Company created successfully! Moving to next step...", Severity.Success, config =>
+        {
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+        });
+
         _activeIndex++;
         await InvokeAsync(StateHasChanged);
     }
-
-
 }

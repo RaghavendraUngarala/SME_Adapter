@@ -3,32 +3,65 @@
 @inject ISnackbar Snackbar
 @using SMEAdapter.Application.DTOs
 
-<MudDialog >
-    <TitleContent >@(IsEditMode ? "Edit Company" : "New Company")</TitleContent>
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
-    <DialogContent >
-        <div style="width : 2500px" >
+    .company-dialog {
+        font-family: 'Poppins', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .dialog-title {
+        font-weight: 800;
+        font-size: 1.75rem;
+        letter-spacing: -0.02em;
+    }
+</style>
+
+<MudDialog Class="company-dialog" MaxWidth="MaxWidth.ExtraLarge">
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@(IsEditMode? Icons.Material.Filled.Edit : Icons.Material.Filled.AddBusiness)"
+                     Color="Color.Primary"
+                     Size="Size.Large" />
+            <MudText Class="dialog-title">
+                @(IsEditMode ? "Edit Company" : "Add New Company")
+            </MudText>
+        </MudStack>
+    </TitleContent>
+
+    <DialogContent>
+        <MudContainer MaxWidth="MaxWidth.False" Style="padding: 0; max-width: 100%;">
             <CompanyForm ExistingCompany="ExistingCompany"
                          OnCompleted="HandleCompleted" />
-        </div>
-        
-       
+        </MudContainer>
     </DialogContent>
 
     <DialogActions>
-        <MudButton Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        <MudStack Row="true" Spacing="2" Style="padding: 16px;">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Default"
+                       OnClick="Cancel"
+                       StartIcon="@Icons.Material.Filled.Close"
+                       Size="Size.Large"
+                       Style="font-weight: 600;">
+                Cancel
+            </MudButton>
+        </MudStack>
     </DialogActions>
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance Dialog { get; set; } = default!;
+    [CascadingParameter]
+    IMudDialogInstance Dialog { get; set; } = default!;
 
-    [Parameter] public CompanyDto? ExistingCompany { get; set; }
+    [Parameter]
+    public CompanyDto? ExistingCompany { get; set; }
+
     private bool IsEditMode => ExistingCompany != null;
 
     private async Task HandleCompleted(CompanyDto company)
     {
-        Dialog.Close(DialogResult.Ok(company));   // THIS RETURNS COMPANY DTO TO CALLER
+        Dialog.Close(DialogResult.Ok(company));
     }
 
     private void Cancel()

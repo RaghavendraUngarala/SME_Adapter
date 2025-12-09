@@ -13,6 +13,7 @@ namespace SMEAdapter.Application.DTOs
     public class ProductDocumentDto
     {
         public Guid Id { get; set; }
+        public bool CreateNewCopy { get; set; } = false;
         public string FileName { get; set; }
         public string ContentType { get; set; }
         public byte[] Data { get; set; }

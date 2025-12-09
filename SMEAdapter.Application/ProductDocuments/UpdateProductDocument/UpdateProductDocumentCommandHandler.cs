@@ -73,9 +73,24 @@ namespace SMEAdapter.Application.ProductDocuments.UpdateProductDocument
                     dto.ClassLang, dto.ClassDescription, dto.ClassId);
             }
 
-            
+            if (dto.CreateNewCopy)
+            {
+                var clone = new ProductDocument(existing.FileName, existing.ContentType, existing.Data);
+
+                ApplyMetadataUpdates(clone);
+                clone.AssignToProduct(productId);
+
+                await _repo.AddAsync(clone, ct);
+
+                // remove old assignment just for this product
+                await _repo.RemoveAssignmentAsync(productId, existing.Id, ct);
+                await _repo.AddAssignmentAsync(productId, clone.Id, ct);
+
+                return Unit.Value;
+            }
+
             // CASE 1: SHARED → OWNED  (CLONE LOGIC)
-         
+
             if (wasShared && becomesOwned)
             {
                 // Create clone

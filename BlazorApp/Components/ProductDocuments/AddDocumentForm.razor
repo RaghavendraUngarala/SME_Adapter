@@ -9,102 +9,179 @@
 @inject IDialogService DialogService
 @using System.Globalization
 @inject ISnackbar Snackbar
+@using static SMEAdapter.Domain.Entities.ProductDocument
+@using static SMEAdapter.Application.DTOs.ProductDocumentDto
 
-<MudGrid >
-    <!-- Document Version -->
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+    .document-form-page {
+        font-family: 'Poppins', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .section-title {
+        font-weight: 800;
+        font-size: 1.75rem;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+    }
+
+    .field-label {
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: -0.01em;
+        margin-bottom: 0.5rem;
+    }
+
+    .body-text {
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+
+    .btn-text {
+        font-weight: 600;
+        font-size: 1.05rem;
+        letter-spacing: 0.01em;
+    }
+
+    .upload-zone {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+    }
+
+        .upload-zone:hover {
+            border-color: var(--mud-palette-primary) !important;
+            background-color: rgba(var(--mud-palette-primary-rgb), 0.05);
+        }
+
+    .file-upload-input {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 10;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .form-paper {
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .form-paper:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+</style>
+
+<MudGrid Class="document-form-page">
     @if (isLoading)
     {
         <MudItem xs="12">
-            <MudPaper Class="pa-4" Outlined="true">
-                <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
-                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
-                    <MudText Typo="Typo.subtitle1" Class="mt-2">Loading document details...</MudText>
-                </MudStack>
+            <MudPaper Class="pa-12 text-center" Elevation="3">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                <MudText Class="body-text mt-4">Loading document details...</MudText>
             </MudPaper>
         </MudItem>
     }
     else
     {
-        <style>
-            .file-upload-input {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-                z-index: 10;
-                opacity: 0;
-            }
-        </style>
-        <MudItem xs="12" md="12">
-        <MudPaper Elevation = "3"Class="pa-4 mb-4" Outlined="true">
-            <MudText Typo="Typo.h4">File Upload</MudText>
-            <MudFileUpload T="IBrowserFile" @ref="_fileUpload"
-                           MaximumFileCount="1"
-                           FilesChanged="FileUploaded"
-                           InputClass="file-upload-input"
-                           Hidden="false"
-                           @ondrop="@ClearDragClass"
-                           @ondragenter="@SetDragClass"
-                           @ondragleave="@ClearDragClass"
-                           @ondragend="@ClearDragClass">
+        <!-- File Upload Section -->
+        <MudItem xs="12">
+            <MudPaper Class="form-paper pa-6" Elevation="3">
+                <MudText Class="section-title" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Class="mr-2" Size="Size.Large" />
+                    File Upload
+                </MudText>
 
-                <ActivatorContent>
-                    <MudPaper Height="180px"
-                              Outlined="true"
-                              Class="@_dragClass">
-                        <MudText Typo="Typo.h6" Class="mb-2">
-                            Drag & drop file here or click to upload
-                        </MudText>
+                <MudFileUpload T="IBrowserFile" @ref="_fileUpload"
+                               MaximumFileCount="1"
+                               FilesChanged="FileUploaded"
+                               InputClass="file-upload-input"
+                               Hidden="false"
+                               @ondrop="@ClearDragClass"
+                               @ondragenter="@SetDragClass"
+                               @ondragleave="@ClearDragClass"
+                               @ondragend="@ClearDragClass">
 
-                        @if (_selectedFile != null)
-                        {
-                            <MudChip Color="Color.Primary" T="string" Text=@($"Selected File: {_selectedFile.Name}") Variant="Variant.Outlined" />
+                    <ActivatorContent>
+                        <MudPaper Height="200px"
+                                  Outlined="true"
+                                  Class="@($"{_dragClass} upload-zone d-flex flex-column align-center justify-center")">
+                            <MudIcon Icon="@Icons.Material.Filled.CloudUpload"
+                                     Size="Size.Large"
+                                     Color="Color.Primary"
+                                     Style="font-size: 3rem; opacity: 0.5;" />
+                            <MudText Typo="Typo.h6" Class="mt-3 mb-3" Style="font-weight: 600;">
+                                Drag & drop file here or click to upload
+                            </MudText>
 
-                        }
-                        else if (!string.IsNullOrWhiteSpace(NewDocument.FileName))
-                        {
-                            <MudChip Color="Color.Info" T="string" Text=@($"Current File: {NewDocument.FileName}") Variant="Variant.Outlined" />
+                            @if (_selectedFile != null)
+                            {
+                                <MudChip T="string" Color="Color.Primary"
+                                         Icon="@Icons.Material.Filled.AttachFile"
+                                         Size="Size.Large"
+                                         Style="font-weight: 600;">
+                                    Selected: @_selectedFile.Name
+                                </MudChip>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(NewDocument.FileName))
+                            {
+                                <MudChip T="string" Color="Color.Info"
+                                         Icon="@Icons.Material.Filled.InsertDriveFile"
+                                         Size="Size.Large"
+                                         Style="font-weight: 600;">
+                                    Current: @NewDocument.FileName
+                                </MudChip>
+                            }
+                        </MudPaper>
+                    </ActivatorContent>
+                </MudFileUpload>
 
+                <MudStack Row="true" Spacing="3" Class="mt-6">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Success"
+                               Size="Size.Large"
+                               StartIcon="@(IsEditMode ? Icons.Material.Filled.Update : Icons.Material.Filled.Save)"
+                               Disabled="@(!fileUploaded && !IsEditMode)"
+                               OnClick="SaveDocument"
+                               Class="btn-text">
+                        @(IsEditMode ? "Update Document" : "Save Document")
+                    </MudButton>
 
-                        }
-                        
-                    </MudPaper>
-                </ActivatorContent>
-
-            </MudFileUpload>
-
-                <MudStack Class="pa-8" Row="true">
-                <MudButton Variant="Variant.Filled"
-                           Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 250px; height :60px"
-                           Color="Color.Success"
-                           Disabled="@(!fileUploaded && !IsEditMode)"
-                           OnClick="SaveDocument">
-                    @(IsEditMode ? "Update" : "Save")
-                </MudButton>
-                <MudButton Variant="Variant.Filled"
-                           Style="font-size: 18px; font-weight: bold; font-family: 'Open Sans'; width: 250px; height :60px"
-                           Color="Color.Secondary"
-                           OnClick="ConfirmCancel">
-                    Back
-                </MudButton>
-            </MudStack>
-
-        </MudPaper>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.ArrowBack"
+                               OnClick="ConfirmCancel"
+                               Class="btn-text">
+                        Cancel
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
         </MudItem>
-        
-        <MudItem xs="6" md="6">
-            <MudPaper Class="pa-8" Elevation = "4" Outlined="true">
-                <MudText Class="mb-4" Typo="Typo.h5">Document Version</MudText>
+
+        <!-- Document Version -->
+        <MudItem xs="12" md="6">
+            <MudPaper Class="form-paper pa-6" Elevation="3">
+                <MudText Class="section-title">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Class="mr-2" />
+                    Document Version
+                </MudText>
+
                 <MudForm @ref="form">
-                    <MudText Typo="Typo.h6">Language</MudText>
-                    <MudSelect Class="mb-4" T="string"
-                               
+                    <MudText Class="field-label">Language</MudText>
+                    <MudSelect T="string"
                                @bind-Value="NewDocument.Language"
                                Variant="Variant.Outlined"
-                               Dense="true"
+                               Margin="Margin.Dense"
                                Required="true"
-                               Placeholder="Select Language">
-
+                               HelperText="Language style of the document"
+                               Placeholder="Select Language"
+                               Class="mb-4">
                         @foreach (var opt in LanguageOptions)
                         {
                             <MudSelectItem T="string" Value="@opt.Code">
@@ -112,132 +189,188 @@
                             </MudSelectItem>
                         }
                     </MudSelect>
-                    <MudText Typo="Typo.h6">Version</MudText>
-                    <MudTextField Class="mb-4" @bind-Value="NewDocument.Version" Variant="Variant.Outlined" />
 
-                    <MudText Typo="Typo.h6">Title</MudText>
+
+                    <MudText Class="field-label">Version</MudText>
+                    <MudTextField @bind-Value="NewDocument.Version"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  HelperText="Design that partly deviates from the previous"
+                                  Class="mb-4" />
+
+                    <MudText Class="field-label">Title</MudText>
                     <div Class="mb-4">
                         <LangStringSetEditor Value="NewDocument.Title"
                                              ValueChanged="OnTitleChanged"
                                              Label="Title"
                                              InputLabel="Title"
-                                             MinRows="1" />
+                                             MinRows="1"
+                                             HelpText="Name of the document"
+                                             LanguageWidth="180px"
+                                             TextWidth="100%" />
                     </div>
 
-                    <MudText Typo="Typo.h6">SubTitle</MudText>
+                    <MudText Class="field-label">SubTitle</MudText>
                     <div Class="mb-4">
                         <LangStringSetEditor Value="NewDocument.SubTitle"
                                              ValueChanged="OnSubTitleChanged"
                                              Label="SubTitle"
                                              InputLabel="SubTitle"
-                                             MinRows="1" />
+                                             MinRows="1"
+                                             HelpText="List of language-dependent subtitles of the document"
+                                             LanguageWidth="180px"
+                                             TextWidth="100%" />
                     </div>
-                    <MudText Typo="Typo.h6">Description</MudText>
+
+                    <MudText Class="field-label">Description</MudText>
                     <div Class="mb-4">
                         <LangStringSetEditor Value="NewDocument.Description"
                                              ValueChanged="OnDescriptionChanged"
                                              Label="Description"
                                              InputLabel="Description"
-                                             MinRows="1" />
+                                             MinRows="1"
+                                             HelpText="Plain text characterizing the content of the document"
+                                             LanguageWidth="180px"
+                                             TextWidth="100%" />
                     </div>
 
-                    <MudText Typo="Typo.h6">Keywords</MudText>
+                    <MudText Class="field-label">Keywords</MudText>
                     <div Class="mb-4">
                         <LangStringSetEditor Value="NewDocument.Keywords"
                                              ValueChanged="OnKeywordsChanged"
                                              Label="Keywords"
                                              InputLabel="Keywords"
-                                             MinRows="1" />
+                                             MinRows="1"
+                                             HelpText="List of language-dependent keywords of the document"
+                                             LanguageWidth="180px"
+                                             TextWidth="100%" />
                     </div>
 
-                    <MudText Typo="Typo.h6">Status Value</MudText>
-                    <MudTextField Class="mb-4" @bind-Value="NewDocument.StatusValue" Variant="Variant.Outlined" />
+                    <MudText Class="field-label">Status Value</MudText>
+                    <MudTextField @bind-Value="NewDocument.StatusValue"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  HelperText="This status value refers to the milestones in the document life cycle"
+                                  Class="mb-4" />
 
-                    <MudText Typo="Typo.h6">Status Set Date</MudText>
-                    <MudDatePicker Class="mb-4"
-                                   @bind-Date="NewDocument.StatusSetDate"
+                    <MudText Class="field-label">Status Set Date</MudText>
+                    <MudDatePicker @bind-Date="NewDocument.StatusSetDate"
                                    Label="Status Set Date"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
                                    DateFormat="yyyy-MM-dd"
-                                   Clearable="true" />
+                                   HelperText="Date when the document status was set"
+                                   Clearable="true"
+                                   Class="mb-4" />
 
-                    <MudText Typo="Typo.h6">Organisation Name</MudText>
-                    <MudTextField Class="mb-4" @bind-Value="NewDocument.OrganisationName" Variant="Variant.Outlined" />
+                    <MudText Class="field-label">Organisation Name</MudText>
+                    <MudTextField @bind-Value="NewDocument.OrganisationName"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  HelperText="Official name of the organization of the author of the document"
+                                  Class="mb-4" />
 
-                    <MudText Typo="Typo.h6">Organisation Official Name</MudText>
-                    <MudTextField Class="mb-4" @bind-Value="NewDocument.OrganisationOfficialName" Variant="Variant.Outlined" />
+                    <MudText Class="field-label">Organisation Official Name</MudText>
+                    <MudTextField @bind-Value="NewDocument.OrganisationOfficialName"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  HelperText="Official name of the organization of the author of the document"
+                                  Class="mb-4" />
                 </MudForm>
             </MudPaper>
         </MudItem>
 
+        <!-- Right Column -->
         <MudItem xs="12" md="6">
-            <MudPaper Elevation="4" Class="pa-4 mb-8" Outlined="true">
-                <MudText Typo="Typo.h5" Class="mb-4">Document Ownership</MudText>
-                <MudRadioGroup T="ProductDocument.DocumentOwnershipType"
-                              @bind-Value="NewDocument.OwnershipType">
-                    <MudRadio T="ProductDocument.DocumentOwnershipType"
-                              Value="ProductDocument.DocumentOwnershipType.Owned"
-                              Color="Color.Primary">
-                        Owned (belongs ONLY to this product)
+            <!-- Document Ownership -->
+            <MudPaper Class="form-paper pa-6 mb-4" Elevation="3">
+                <MudText Class="section-title">
+                    <MudIcon Icon="@Icons.Material.Filled.Share" Class="mr-2" />
+                    Document Ownership
+                </MudText>
+                <MudRadioGroup T="DocumentOwnershipType"
+                               @bind-Value="NewDocument.OwnershipType">
+                    <MudRadio T="DocumentOwnershipType"
+                              Value="DocumentOwnershipType.Owned"
+                              Color="Color.Success"
+                              Style="font-weight: 600; font-size: 1.05rem;">
+                        <MudStack Spacing="1">
+                            <MudText Style="font-weight: 600;">Owned</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Belongs only to this product</MudText>
+                        </MudStack>
                     </MudRadio>
-
-                    <MudRadio T="ProductDocument.DocumentOwnershipType"
-                              Value="ProductDocument.DocumentOwnershipType.Shared"
-                              Color="Color.Secondary">
-                        Shared ( reusable across products )
+                    <MudRadio T="DocumentOwnershipType"
+                              Value="DocumentOwnershipType.Shared"
+                              Color="Color.Info"
+                              Style="font-weight: 600; font-size: 1.05rem;">
+                        <MudStack Spacing="1">
+                            <MudText Style="font-weight: 600;">Shared</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Reusable across products</MudText>
+                        </MudStack>
                     </MudRadio>
                 </MudRadioGroup>
-
-
-            </MudPaper>
-            <MudPaper Class="pa-4 mb-8" Elevation="6" Outlined="true">
-                <MudText Class="mb-4" Typo="Typo.h5">Document Identifier</MudText>
-
-                <MudText Typo="Typo.h6">Value ID</MudText>
-                <MudTextField Class="mb-4" @bind-Value="NewDocument.ValueId" Variant="Variant.Outlined" />
-
-                <MudText Typo="Typo.h6">Domain ID</MudText>
-                <MudTextField Class="mb-4" @bind-Value="NewDocument.DomainId" Variant="Variant.Outlined" />
             </MudPaper>
 
-            <MudPaper Class="pa-4 mb-4" Outlined="true">
-                <MudText Typo="Typo.h5" Class="mb-4">Document Classification</MudText>
+            <!-- Document Identifier -->
+            <MudPaper Class="form-paper pa-6 mb-4" Elevation="3">
+                <MudText Class="section-title">
+                    <MudIcon Icon="@Icons.Material.Filled.Fingerprint" Class="mr-2" />
+                    Document Identifier
+                </MudText>
 
-                <MudText Typo="Typo.h6">Classification System</MudText>
-                <MudTextField Class="mb-4" @bind-Value="NewDocument.ClassificationSystem" Variant="Variant.Outlined" />
+                <MudText Class="field-label">Value ID</MudText>
+                <MudTextField @bind-Value="NewDocument.ValueId"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              HelperText="Alphanumeric character sequence uniquely identifying a document"
+                              Class="mb-4" />
 
+                <MudText Class="field-label">Domain ID</MudText>
+                <MudTextField @bind-Value="NewDocument.DomainId"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              HelperText="Identification of the domain in which the given DocumentId is unique"
+                              Class="mb-4" />
+            </MudPaper>
 
-                <MudText Typo="Typo.h6">ClassName</MudText>
+            <!-- Document Classification -->
+            <MudPaper Class="form-paper pa-6" Elevation="3">
+                <MudText Class="section-title">
+                    <MudIcon Icon="@Icons.Material.Filled.Category" Class="mr-2" />
+                    Document Classification
+                </MudText>
 
+                <MudText Class="field-label">Classification System</MudText>
+                <MudTextField @bind-Value="NewDocument.ClassificationSystem"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              HelperText="Identification of the classification system"
+                              Class="mb-4" />
+
+                <MudText Class="field-label">Class Name</MudText>
                 <div Class="mb-4">
                     <LangStringSetEditor Value="NewDocument.ClassName"
                                          ValueChanged="OnClassNameChanged"
                                          Label="ClassName"
-                                         InputLabel="CLassName"
-                                         MinRows="1" />
+                                         InputLabel="Class Name"
+                                         MinRows="1"
+                                         HelpText="Name of the class of the classification system"
+                                         LanguageWidth="180px"
+                                         TextWidth="100%" />
                 </div>
 
-                <MudText Typo="Typo.h6">ClassLang</MudText>
-                <MudTextField Class="mb-4" @bind-Value="NewDocument.ClassLang" Variant="Variant.Outlined" />
-
-                <MudText Typo="Typo.h6">ClassDescription</MudText>
-                <MudTextField Class="mb-4" @bind-Value="NewDocument.ClassDescription" Variant="Variant.Outlined" />
-
-                <MudText Typo="Typo.h6">ClassId</MudText>
-                <MudTextField Class="mb-4" @bind-Value="NewDocument.ClassId" Variant="Variant.Outlined" />
+                <MudText Class="field-label">Class ID</MudText>
+                <MudTextField @bind-Value="NewDocument.ClassId"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              HelperText="Unique ID of the document class within a classification system"
+                              Class="mb-4" />
             </MudPaper>
-
         </MudItem>
-        
-      
-
-
-       
-
     }
 </MudGrid>
 
 @code {
-
     [Parameter]
     public Guid ProductId { get; set; }
 
@@ -256,7 +389,7 @@
     [Parameter]
     public EventCallback<ProductDocumentDto> OnSaved { get; set; }
 
-    private record LangOpt(string Code, string Display);
+    
 
     private bool fileUploaded = false;
     private bool isLoading = false;
@@ -267,106 +400,107 @@
 
     private ProductDocumentDto NewDocument = new();
 
+    private DocumentOwnershipType _originalOwnership;
+
     private IBrowserFile? _selectedFile;
 
     private MudFileUpload<IBrowserFile>? _fileUpload;
-    private List<LangOpt> LanguageOptions = CultureInfo
-    .GetCultures(CultureTypes.NeutralCultures)
-    .Where(c => c.TwoLetterISOLanguageName.Length == 2)
-    .GroupBy(c => c.TwoLetterISOLanguageName)  // remove duplicates
-    .Select(g =>
+
+    private List<LangOpt> LanguageOptions =>
+     GetLanguageOptions().ToList();
+
+    private IEnumerable<LangOpt> GetLanguageOptions()
     {
-        var code = g.Key;
-        var culture = g.First();
-        return new LangOpt(
-            code,
-            CultureInfo.GetCultureInfo(code).EnglishName // display in English
-        );
-    })
-    .OrderBy(x => x.Display)
-    .ToList();
+        var top = new[] { "en", "de" };
+        var euro = new[]
+        {
+        "fr", "es", "it", "nl", "pl", "cs", "da", "sv", "no", "fi"
+    };
+
+        var allCodes = CultureInfo
+            .GetCultures(CultureTypes.NeutralCultures)
+            .Select(c => c.TwoLetterISOLanguageName)
+            .Where(code => code.Length == 2)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        var sortedCodes = allCodes
+            .OrderBy(code =>
+                top.Contains(code) ? 0 :
+                euro.Contains(code) ? 1 : 2)
+            .ThenBy(code => code)
+            .ToList();
+
+        foreach (var code in sortedCodes)
+        {
+            var culture = CultureInfo.GetCultures(CultureTypes.NeutralCultures)
+                .FirstOrDefault(c =>
+                    c.TwoLetterISOLanguageName.Equals(code, StringComparison.OrdinalIgnoreCase));
+
+            var display = culture == null ? code : culture.EnglishName;
+
+            yield return new LangOpt(code, display);
+        }
+    }
+
+    private record LangOpt(string Code, string Display);
 
 
     protected override async Task OnInitializedAsync()
     {
         if (IsEditMode && DocumentId.HasValue)
         {
-            // Fetch existing document from backend
             NewDocument = await Mediator.Send(new GetProductDocumentByIdQuery(DocumentId.Value));
-            
             EnsureDictionariesInitialized(NewDocument);
-            fileUploaded = true; 
-
+            fileUploaded = true;
+            _originalOwnership = NewDocument.OwnershipType;
             StateHasChanged();
         }
         else
         {
-            // Creating a new one
             NewDocument = new ProductDocumentDto();
             EnsureDictionariesInitialized(NewDocument);
         }
     }
 
-    private const string DefaultDragClass =
-        "relative rounded-lg border-2 border-dashed pa-4 mud-width-full mud-height-full";
-
+    private const string DefaultDragClass = "relative rounded-lg border-2 border-dashed pa-4 mud-width-full mud-height-full";
     private string _dragClass = DefaultDragClass;
 
-   
-
-    private async Task OpenFilePickerAsync()
-        => await (_fileUpload?.OpenFilePickerAsync() ?? Task.CompletedTask);
-
-    private async Task ClearAsync()
-    {
-        _selectedFile = null;
-        await _fileUpload?.ClearAsync()!;
-        ClearDragClass();
-    }
-
-    private void Upload()
-    {
-        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopCenter;
-        Snackbar.Add("TODO: Upload your file!");
-    }
-
-    private void SetDragClass()
-        => _dragClass = $"{DefaultDragClass} mud-border-primary";
-
-    private void ClearDragClass()
-        => _dragClass = DefaultDragClass;
-    
-
+    private void SetDragClass() => _dragClass = $"{DefaultDragClass} mud-border-primary";
+    private void ClearDragClass() => _dragClass = DefaultDragClass;
 
     private static void EnsureDictionariesInitialized(ProductDocumentDto d)
     {
         d.ClassName ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
         d.Title ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         d.SubTitle ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         d.Description ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         d.Keywords ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
+
     private void OnClassNameChanged(Dictionary<string, string>? v)
     {
         if (NewDocument == null) return;
         NewDocument.ClassName = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
+
     private void OnTitleChanged(Dictionary<string, string>? v)
     {
         if (NewDocument == null) return;
         NewDocument.Title = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
+
     private void OnSubTitleChanged(Dictionary<string, string>? v)
     {
         if (NewDocument == null) return;
         NewDocument.SubTitle = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
+
     private void OnDescriptionChanged(Dictionary<string, string>? v)
     {
         if (NewDocument == null) return;
         NewDocument.Description = v ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     }
+
     private void OnKeywordsChanged(Dictionary<string, string>? v)
     {
         if (NewDocument == null) return;
@@ -378,13 +512,31 @@
         _selectedFile = files;
         fileUploaded = _selectedFile is not null;
     }
-    
+
     private async Task SaveDocument()
     {
-        // Always ensure ProductId is set, regardless of file upload
-        NewDocument.ProductId = ProductId;   // 🔥 CRITICAL FIX
+        if (IsEditMode &&
+            NewDocument.OwnershipType == DocumentOwnershipType.Owned &&
+            _originalOwnership == DocumentOwnershipType.Shared)
+        {
+            bool? confirm = await DialogService.ShowMessageBox(
+                "Convert to Owned?",
+                "This document is currently SHARED. Changing it to OWNED will create a NEW COPY for this product. Do you want to continue?",
+                yesText: "Yes, create new copy",
+                cancelText: "No"
+            );
 
-        // Handle file upload if there is a new file
+            if (confirm != true)
+            {
+                NewDocument.OwnershipType = DocumentOwnershipType.Shared;
+                return;
+            }
+
+            NewDocument.CreateNewCopy = true;
+        }
+
+        NewDocument.ProductId = ProductId;
+
         if (_selectedFile is not null)
         {
             using var ms = new MemoryStream();
@@ -392,28 +544,23 @@
                                .CopyToAsync(ms);
 
             var fileBytes = ms.ToArray();
-
             NewDocument.FileName = _selectedFile.Name;
             NewDocument.ContentType = _selectedFile.ContentType;
             NewDocument.StatusSetDate ??= DateTime.UtcNow;
             NewDocument.Data = fileBytes;
         }
 
-        // CREATE MODE
         if (!DocumentId.HasValue)
         {
             await Mediator.Send(new CreateProductDocumentCommand(NewDocument));
         }
         else
         {
-            // UPDATE MODE (ProductId must already be set above)
             await Mediator.Send(new UpdateProductDocumentCommand(NewDocument));
         }
 
-        // Notify parent page
         await OnSaved.InvokeAsync(NewDocument);
 
-        // Reset form in create mode
         if (!DocumentId.HasValue)
         {
             NewDocument = new();
@@ -429,25 +576,18 @@
             "You have unsaved changes. Are you sure you want to cancel?",
             yesText: "Yes, discard",
             cancelText: "No");
+
         if (result != true)
             return;
-        Console.WriteLine($"Dialog closed. Result = {result}");
 
         if (IsEditMode)
         {
-            // Edit Mode → navigate back to parent page
             Navigation.NavigateTo($"/productdocument/{ProductId}");
         }
         else
         {
-            // Add Mode → just tell parent to hide this form
             await Task.Delay(100);
             await FormValueChanged.InvokeAsync(false);
-
         }
-
-
-
-
     }
 }
