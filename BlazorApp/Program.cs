@@ -3,6 +3,7 @@ using MudBlazor.Services;
 using SMEAdapter.Application;
 using SMEAdapter.Application.Services;
 using SMEAdapter.Infrastructure;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 

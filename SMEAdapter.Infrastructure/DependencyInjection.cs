@@ -21,7 +21,8 @@ namespace SMEAdapter.Infrastructure
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductDocumentRepository, ProductDocumentRepository>();
             services.AddScoped<ICompanyRepository, CompanyRepository>();
-           
+            services.AddScoped<IProductTechnicalDataRepository, ProductTechnicalDataRepository>();
+            services.AddScoped<ITechnicalDataTemplateRepository, TechnicalDataTemplateRepository>();  
 
 
             return services;
